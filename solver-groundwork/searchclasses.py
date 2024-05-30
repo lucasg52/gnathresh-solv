@@ -1,3 +1,7 @@
+# Lucas Swanson Ripon College '27
+
+# This file (for now) simply lays out what I believe the solver could look like.
+
 import math
 
 class GNASearch():
@@ -22,8 +26,9 @@ class GNASearch():
             self.lo = self.a
         self.a = (self.lo + self.hi) / 2
 
-
 class ExpandingSearch(GNASearch):
+    # This class will be useful when bounds for the solution may be provided that are not consistent (there may be a chance that the provided bounds do not contain the solution)
+    # the search will thus expand the bounds accordingly before switching to a binary search again.
     def __init__(
                  self,
                  lo, hi,                # the assumed window in which the solution lies
