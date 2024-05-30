@@ -2,7 +2,12 @@ import math
 
 class GNASearch():
 
-    def __init__ (self, lo, hi, propotest, a = math.nan):
+    def __init__(
+                 self,
+                 lo, hi,                # the assumed window in which the solution lies
+                 propotest,             # the function that will return True if propogation succeeds, False otherwise
+                 a = math.nan           # optionally, a first guess can be provided (otherwise is the median between lo and hi)
+                ):
         self.lo = lo
         self.hi = hi
         self.term = False
@@ -19,7 +24,14 @@ class GNASearch():
 
 
 class ExpandingSearch(GNASearch):
-    def __init__(self, lo, hi, propotest, lim_lo, lim_hi, a = math.nan):
+    def __init__(
+                 self,
+                 lo, hi,                # the assumed window in which the solution lies
+                 propotest,             # the function that will return True if propogation succeeds, False otherwise
+                 lim_lo, lim_hi,        # since the search may expand, these will provide hard upper and lower bounds
+                                        # (NOT IMPLIMENTED YET)
+                 a = math.nan           # optionally, a first guess can be provided (otherwise is the median between lo and hi)
+                ):
         self.lim_lo = lim_lo
         self.lim_hi = lim_hi
         super().__init__(lo, hi, propotest, a = a)
