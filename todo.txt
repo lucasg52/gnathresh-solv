@@ -1,0 +1,6 @@
+
+Lucas:
+  - Reading old plaintext files from Beloit 2018, loading into arrays and whatnot
+  - Setting up demo for progress before Tue
+  - Visualization for old data from Beloit 2018
+  - Get correct parameters for model
