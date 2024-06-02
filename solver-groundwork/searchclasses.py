@@ -3,6 +3,17 @@
 # This file (for now) simply lays out what I believe the solver could look like.
 
 import math
+import sys
+
+class StrictInt(int):
+    def __truediv__(self,other):
+        return StrictInt(super().__truediv__(other))
+    def __mul__(self,other):
+        return StrictInt(super().__mul__(other))
+    def __add__(self,other):
+        return StrictInt(super().__add__(other))
+    def __sub__(self,other):
+        return StrictInt(super().__sub__(other))
 
 class GNASearch():
 
@@ -10,12 +21,14 @@ class GNASearch():
                  self,
                  lo, hi,                # the assumed window in which the solution lies
                  propatest,             # the function that will return True if propagation succeeds, False otherwise
-                 a = math.nan           # optionally, a first guess can be provided (otherwise is the median between lo and hi)
+                 a = math.nan,           # optionally, a first guess can be provided (otherwise is the median between lo and hi)
+                 stopcond = None        # for use of fullsearch() . if left as None, will throw warning, and not iterate
                 ):
         self.lo = lo
         self.hi = hi
         self.term = False
         self.propatest = propatest
+        self.stopcond = stopcond
         if math.isnan(a):
             self.a = (lo + hi) / 2
 
@@ -25,6 +38,16 @@ class GNASearch():
         else:
             self.lo = self.a
         self.a = (self.lo + self.hi) / 2
+
+    def fullsearch (self):
+        if self.stopcond is None:
+            sys.stderr.write("GNASearch: called fullsearch() without stop condition")
+        else:
+            while self.stopcond(self): #and self.term is True:
+                self.searchstep()
+        
+        return self.a
+
 
 class ExpandingSearch(GNASearch):
     # This class will be useful when bounds for the solution may be provided that are not consistent (there may be a chance that the provided bounds do not contain the solution)
