@@ -1,0 +1,93 @@
+\documentclass[11pt,oneside,letterpaper]{article}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{setspace}
+\usepackage{layout}
+
+\setlength{\evensidemargin}{0in}
+\setlength{\topmargin}{0in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\footskip}{1in}
+\setlength{\textwidth}{6.5in}
+\setlength{\textheight}{8in}
+\title{Problem set 0B}
+\author{Lucas. S}
+\date{January 2024}
+\doublespacing
+\begin{document}
+
+
+\maketitle
+\section*{Problem 1}
+\textbf{Claim:}
+
+The sum
+\\\indent\indent
+\( \sum\limits^{N}_{i=1} (2i-1) \)
+
+is equal to $\mathnormal{N^2}$.
+\section*{}
+\textbf{Proof:}
+
+Clearly, this formula holds true for $N=1$.
+
+\indent\indent
+\( \sum\limits^{1}_{i=1} (2i-1) = (2(1)-1) = 1 = 1^2\)
+
+With this, if we can prove that
+
+\indent\indent
+\(
+  \scalebox{1.4}{$\forall$} 
+  k\in\mathbb{Z}^+\ \ (\sum\limits^{k}_{i=1} (2i-1) = k^2)\ \rightarrow\ (\sum\limits^{k+1}_{i=1} (2i-1) = (k+1)^2)
+\),
+
+then we have an inductive argument that shows our claim is true for all $\mathnormal{N\in\mathbb{Z}^+}$, since we have the base case shown above for \(N=1\).
+
+\vspace{5pt}
+That said, let \(k\in\mathbb{Z}^+\) such that \(\sum\limits^{k}_{i=1} (2i-1) = k^2\).
+
+Expanding the above formula for \(k^2\), we have
+
+\indent\indent
+\(
+    k^2\ =\ (2-1)+(4-1)+\cdot\cdot\cdot+(2k-1)
+\)
+
+for large k. For \(k=1\) we still have \(k^2=(2k-1)\)
+
+let \(S_\mathnormal{\(k+1\)} = \sum\limits^{k+1}_{i=1} (2i-1)\)
+
+When expanding the formula \(S_\mathnormal{\(k+1\)}\), we have
+
+\indent\indent
+\(
+    S_\mathnormal{\(k+1\)} =\ (2-1)+(4-1)+\cdot\cdot\cdot+(2k-1)+(2(k+1)-1)
+\)
+
+Clearly, the summation for \(k^2\) is seen in this expression as the first \(k\) terms.
+Therefore,
+
+\indent\indent
+\(
+    S_\mathnormal{\(k+1\)}\ =\ k^2+(2(k+1)-1)
+\).
+
+By algebraic manipulation,
+
+\begin{align*}
+S_\mathnormal{\(k+1\)}\ =&\ k^2+(2k+2-1)
+\\\therefore&\\
+S_\mathnormal{\(k+1\)}\ =&\ k^2+(2k+2-1)
+\\\therefore&\\
+S_\mathnormal{\(k+1\)}\ =&\ k^2+2k+1
+\end{align*}
+
+And by the binomial theorem,
+
+\indent\indent
+\(
+    S_\mathnormal{\(k+1\)}\ =\ (k+1)^2
+\).
+\end{document}
