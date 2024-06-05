@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 #import sys
 from tutorialclasses import BallAndStick
 h.load_file('stdrun.hoc')
-w  =h.Section(name="soma")
 class BAS:
     def __init__ (self, gid):
         self._gid = gid
@@ -43,9 +42,11 @@ class modBAS(BallAndStick):
     def setup2(self):
         self.axon = h.Section(cell = self, name = "3")
         self.axon.connect(self.soma(1))
+        self.dend.connect(self.soma(0))
         self.axon.L = 200* microm
         self.axon.nseg = 50
         self.axon.insert("hh")
+        self.dend.nseg = 20
         #self.axon.insert("pas")
 
         for seg in self.axon:
@@ -57,33 +58,42 @@ class modBAS(BallAndStick):
             #seg.pas.e = -65 * mV
 
 m = modBAS(1)
-m.dend.nseg = 20
-m.dend.L = 200 * microm
-
-
-stim = h.IClamp(m.soma(0))
-stim.delay = 5
-stim.dur = 1
-stim.amp = 0.05
-
-
-
-somaV = h.Vector().record(m.soma(0.5)._ref_v)
-axonV = h.Vector().record(m.axon(0.5)._ref_v)
-dendV = h.Vector().record(m.dend(1)._ref_v)
-
-
-arrV = [h.Vector().record(m.dend(d/5)._ref_v) for d in range (0,5)]
 
 t = h.Vector().record(h._ref_t)
 
-h.finitialize(-65 * mV)
-h.continuerun(50 * ms)
+def setup_stim(seg):
+    global stim
+    stim = h.IClamp(seg)
+    stim.delay = 5
+    stim.dur = 1
+    stim.amp = 0.05
 
-ga = plt.plot(t,axonV, label = "axonV")
-gs = plt.plot(t,somaV, label = "somaV")
-gd = plt.plot(t,dendV,label = "dendV")
+def setup_record():
+    global somaV
+    global axonV
+    global dendV
+    somaV = h.Vector().record(m.soma(0.5)._ref_v)
+    axonV = h.Vector().record(m.axon(0.5)._ref_v)
+    dendV = h.Vector().record(m.dend(0.5)._ref_v)
 
+def rerun():
+    h.finitialize(-65 * mV)
+    h.continuerun(50 * ms)
+
+def replot():
+    global ga
+    global gs   
+    global gd
+
+    ga = plt.plot(t,axonV, label = "axonV")
+    gs = plt.plot(t,somaV, label = "somaV")
+    gd = plt.plot(t,dendV,label = "dendV")
+    plt.legend()
+
+setup_record()
+setup_stim(m.dend(1))
+rerun()
+replot()
 #stdout = sys.stdout
 #sys.stdout = fp = open("out.txt","w")
 #help(plt.Figure)
