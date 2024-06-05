@@ -1,6 +1,7 @@
 To-Do:
 
 Look into outputting raw h.Vector data into files (raw data files), for better analysis--see if its even that useful
+  Turns out this is quite east w/ numpy.save and numpy.load very convienent
 
 Play around more with programatic sim control:
   What is the point of h.finitialize? h.continuerun?
