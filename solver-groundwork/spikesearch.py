@@ -9,7 +9,7 @@ def find_crit_vals_basic(nparr):
     ret = []
     ind = 0
     for i in delta_arr:   
-        if iprev*i < 0:
+        if iprev*i < 0: #Critical bug: will not sense critical val if delta is zero
             ret.append((ind, nparr[ind]))
         ind += 1
         iprev = i
