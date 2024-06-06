@@ -1,0 +1,15 @@
+Stim-site:
+	- Amplitude:
+		0.2
+	- Duration:
+		0.3125 ms (laura notes that this is equal to 5/16 ms)
+	- Delays:
+		only seen in PropogationSearch.hoc and simulation_base.goc
+		5ms, 10 ms for double pulse(?)
+		sometimes assigned to var "tstart"
+		in PropagationSearch.hoc a contitional statement looks for max voltage 1 ms after stimulation begins
+		in PropagationSearch.hoc it is set to 0 (w/comment) for some reason
+
+Misc:
+	- dt:
+		0.001 (vs-expcell...hoc files)
