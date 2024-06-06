@@ -1,4 +1,4 @@
-# transcribed from Beloit_axon_propagation/expcell_templates.hoc
+# transcribed from Beloit_axon_propagation/kinetics.hoc
 # original comments start with HOC's double-shash
 
 from neuron import h
