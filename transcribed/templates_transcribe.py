@@ -1,3 +1,6 @@
+#transcribed from Beloit_axon_propagation/expcell_templates.hoc
+#original comments start with HOC's double-slash
+
 from neuron import h
 from math import sqrt
 import kinetics_transcribe as kin

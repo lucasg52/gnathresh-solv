@@ -1,3 +1,7 @@
+# Lucas Swanson 6/6/2024
+# transcribed from Beloit_axon_propagation/kinetics.hoc
+# original comments start with HOC's double-shash
+
 from neuron import h
 traubdict = {
     "axon" : {
@@ -60,7 +64,8 @@ def ins_Traub(sec, forsec):
 def unins_Traub():
     print("uninsert_Traub: not implemented")
 
-def inswho_Traub()
+def inswho_Traub():
+    pass
 
 
 def ins_Jonas(sec, forsec):
