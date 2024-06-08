@@ -1,0 +1,6 @@
+# ignore compiled x86_64 dir (from modfiles)
+x86_64
+
+# ignore __pycache__ files, generated from running IDLE
+__pycache__
+

@@ -10,6 +10,17 @@ Stim-site:
 		in PropagationSearch.hoc a contitional statement looks for max voltage 1 ms after stimulation begins
 		in PropagationSearch.hoc it is set to 0 (w/comment) for some reason
 
+Soma:
+	- membrane potential (?):
+		-80, -70, -60 mV (vs-expcell...hoc files)
+
+Initial Segment:
+	e_pas:
+		-80, -70, -60mV (vs-expcell...hoc files)
+	g_pas:
+		0.001 (vs-expcell...hoc files)
+
+
 Misc:
 	- dt:
 		0.001 (vs-expcell...hoc files)
