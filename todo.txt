@@ -5,4 +5,4 @@ Lucas:
   - Visualization for old data from Beloit 2018
   	--Done.
   - Get correct parameters for model
-    --Mostly done. All paramaters appear to lie in just a few files, along with the modfiles (see transcribed dir for more details)
+    --Mostly done. All paramaters appear to lie in just a few files, along with the modfiles (see experimentation/paramnotes for more details)
