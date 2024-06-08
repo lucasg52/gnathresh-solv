@@ -1,3 +1,4 @@
+# Lucas Swanson 6/6/2024
 # transcribed from Beloit_axon_propagation/kinetics.hoc
 # original comments start with HOC's double-shash
 
