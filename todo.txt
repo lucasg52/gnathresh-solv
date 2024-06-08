@@ -1,8 +1,8 @@
 
 Lucas:
   - Reading old plaintext files from Beloit 2018, loading into arrays and whatnot
-  	--Partially done. Both features added w/python in 'visualizations' dir.
-  - Setting up demo for progress before Tue
+  	--Done.
   - Visualization for old data from Beloit 2018
   	--Done.
   - Get correct parameters for model
+    --Mostly done. All paramaters appear to lie in just a few files, along with the modfiles (see transcribed dir for more details)
