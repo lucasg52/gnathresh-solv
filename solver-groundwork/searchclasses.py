@@ -1,4 +1,4 @@
-# Lucas Swanson Ripon College '27
+# Lucas Swanson -- Ripon College '27
 
 # This file (for now) simply lays out what I believe the solver could look like.
 

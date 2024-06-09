@@ -1,3 +1,5 @@
+#Lucas Swanson -- Ripon College '27
+
 import numpy as np
 
 def countcols(fp, wordnum = 0, wordsep = '\t'):

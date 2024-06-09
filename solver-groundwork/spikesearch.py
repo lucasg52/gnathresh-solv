@@ -1,3 +1,6 @@
+# Lucas Swanson -- Ripon College '27
+# This file will likely not be used since we already have extrema.mod (see modfiles dir)
+
 import numpy as np
 from searchclasses import GNASearch as BinSearch
 import math

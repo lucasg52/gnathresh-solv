@@ -1,3 +1,5 @@
+// Lucas Swanson -- Ripon College '27
+
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 

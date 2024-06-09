@@ -1,3 +1,5 @@
+#Lucas Swanson -- Ripon College '27
+
 #transcribed from Beloit_axon_propagation/expcell_templates.hoc
 #original comments start with HOC's double-slash
 

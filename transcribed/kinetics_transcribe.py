@@ -1,4 +1,4 @@
-# Lucas Swanson 6/6/2024
+# Lucas Swanson -- Ripon College '27
 # transcribed from Beloit_axon_propagation/kinetics.hoc
 # original comments start with HOC's double-shash
 
