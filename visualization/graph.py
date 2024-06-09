@@ -1,3 +1,5 @@
+#Lucas Swanson -- Ripon College '27
+
 import matplotlib.pyplot as plt
 import numpy as np
 import readsummary as rs

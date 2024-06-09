@@ -1,3 +1,5 @@
+#Lucas Swanson -- Ripon College '27
+
 import numpy as np
 def toarr_axis(
         filename,
@@ -5,7 +7,7 @@ def toarr_axis(
         *axis_wordnums, #the columns that contain the axis variables (independant vars)
         wordsep = '\t', #the seperator of columns
         emptyval = float(0) #the placeholder value used in the output array (for unfilled dependant var vals)
-        #MUST BE FLOAT LMAO
+        #MUST BE FLOAT
         ):
     fp = open(filename, 'r')
     axisvals = [set() for i in axis_wordnums]
@@ -19,7 +21,6 @@ def toarr_axis(
     axisvals = [list(s) for s in axisvals]
     for s in axisvals:
         s.sort()
-    print(axisvals)
     fp.close()
     fp = open(filename, 'r')
     
@@ -41,7 +42,6 @@ def toarr_axis(
             )
             ii +=1
         data[tuple(coord)] = float(lsep[dep_wordnum])
-        print(tuple(coord),  float(lsep[dep_wordnum]))
 
     fp.close()
     return data, axisvals
