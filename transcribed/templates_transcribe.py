@@ -20,12 +20,13 @@ class ExpcellTemplate:
             ratio,
             layer,
             n_cells,
+            *args,
             gid = 0
             ):
         self.IS = h.Section(            name = "IS")
         self.main_shaft = h.Section(    name = "main_shaft")
-        self.extstim_site = h.Section(  name = "extstim_site")
-        self.junction_site = h.Section( name = "junction_site" )
+        #self.extstim_site = h.Section(  name = "extstim_site")
+        #self.junction_site = h.Section( name = "junction_site" )
         self.prop_site = h.Section(     name = "prop_site")
         self.main_diam = 0.6
         self.IS_diam = 1.6
@@ -94,11 +95,20 @@ class ExpcellTemplate:
                     /
                     (2*alpha)
                 )
-
-    def _setup_morphology(self):
-        pass
     def _setup_biophysics(self):
-        pass
+        map(lambda args : kin.ins_Traub(*args),
+                (self.soma, "soma"),
+                (self.main_shaft, "axon"),
+                (self.IS, "axon"),
+                (self.prop_site, "axon"))
+    def _setup_morphology(self):
+        self.IS.connect(self.soma(1)) #assuming this is correct
+        self.main_shaft.connect(self.IS(1))
+        self.main_shaft.connect(self.stim_site(0))
+        for sec in self.all:
+            sec.nseg = sec.L/self.dx + 1
+
+        
 
     
     
