@@ -50,12 +50,13 @@ def ins_Traub(sec, forsec):
     forsecdict = traubdict 
     assert(forsec in forsecdict)
 
-    attrdict = forsecdict[forsec]
+    
+    sec.insert("pas")
     if forsec == "axon":
         sec.insert("kdrTraub")
         sec.insert("nafTraub")
+    attrdict = forsecdict[forsec]
     for seg in sec:
-        seg.insert("pas")
         seg.e_pas = -70
         seg.cm = 0.9
         for k in attrdict:
@@ -69,13 +70,15 @@ def inswho_Traub():
 
 
 def ins_Jonas(sec, forsec):
+    print("ins_Jonas: not fully implemented (check kinetics_wholecell.hoc)")
     forsecdict = jonasdict 
     assert(forsec in forsecdict)
 
-    attrdict = forsecdict[forsec]
+    sec.insert("pas")
     if forsec == "axon":
         sec.insert("kdrTraub")
         sec.insert("nafTraub")
+    attrdict = forsecdict[forsec]
     for seg in sec:
         seg.insert("pas")
         seg.e_pas = -70
