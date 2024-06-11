@@ -1,0 +1,151 @@
+proc insert_Traub(){
+  forall {
+    insert pas
+    g_pas =   1/1000
+    //g_pas =   mu*0.001
+    e_pas = -70
+    Ra =   100.0
+    cm = 0.9
+    insert nafTraub
+    gbar_nafTraub =   0.45
+    ena = 50
+    insert kdrTraub
+    gbar_kdrTraub =   0.45
+    ek = -95
+       //insert ka
+       //gbar_ka =   0.002
+       //insert k2
+       //gbar_k2 =   0.0001
+  }
+  tstop = 20
+}
+
+proc uninsert_Traub(){
+    forall {
+        uninsert pas
+        uninsert nafTraub
+        uninsert kdrTraub
+    }
+}
+
+proc insert_modTraub(){local IS localobj cell
+    forall {
+        insert pas
+        g_pas =   0.001
+        e_pas = -70
+        Ra =   100.0
+        cm = 0.9
+        insert nafTraub
+        gbar_nafTraub =   0.2
+        ena = 50
+        insert kdrTraub
+        gbar_kdrTraub =   0.2
+        ek = -95
+    }
+    cell = $o1
+    IS = $2
+    cell.axon[IS]{
+        for(x,0){
+            if(x*L<40){
+                gbar_nafTraub(x) =   0.45
+                gbar_kdrTraub(x) =   0.45
+            }
+        }
+        //insert pasChand
+    }
+    tstop = 20
+}
+
+proc reset_modTraub(){local IS,gna localobj cell
+    // call after insert_modTraub to adjust g_na in axons
+    gna = $2
+    forall{
+        gbar_nafTraub = gna
+        gbar_kdrTraub = gna
+    }
+    cell = $o1
+    IS = cell.IS
+    cell.axon[IS]{
+        for(x,0){
+            if(x*L<40){
+                gbar_nafTraub(x) = 0.45
+                gbar_kdrTraub(x) = 0.45
+            }
+        }
+    }
+}
+
+proc insert_Jonas(){
+  forall {
+    insert pas
+    g_pas =   1/36000
+    e_pas = -85
+    Ra =   163
+    cm = 1
+    insert nafJonas
+    gbar_nafJonas =   0.096
+    ena = 60
+    insert kdrJonas
+    gbar_kdrJonas =  0.096 //0.036
+    ek = -85
+  }
+  tstop = 70
+}
+
+proc uninsert_Jonas(){
+  forall {
+    uninsert pas
+    uninsert nafJonas
+    uninsert kdrJonas
+  }
+}
+
+proc insert_Yu(){
+  forall {
+    insert pas
+    g_pas = 0.333*1e-4
+    e_pas = -70
+    Ra =   150
+    cm = 0.75
+    insert nafYu
+    gbar_nafYu =   0.8
+    ena = 60
+    insert kdrYu
+    gbar_kdrYu =   0.08
+    ek = -90
+  }
+  tstop = 50
+}
+
+proc uninsert_Yu(){
+  forall {
+    uninsert pas
+    uninsert nafYu
+    uninsert kdrYu
+  }
+}
+
+proc insert_conglomerate(){
+  forall {
+    insert pas
+    g_pas = 0.001 // Traub //0.333*1e-4
+    e_pas = -85 // Jonas
+    Ra =   100 // Traub //150 // Yu
+    cm = 0.75 // Yu
+    insert nafJonas
+    gbar_nafJonas =   0.8 // Yu
+    ena = 60 
+    insert kdrJonas
+    gbar_kdrJonas =   0.08 // Yu
+    ek = -85 
+  }
+  tstop = 30
+}
+
+proc uninsert_conglomerate(){
+  forall {
+    uninsert pas
+    uninsert nafJonas
+    uninsert kdrJonas
+  }
+}

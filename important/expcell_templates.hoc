@@ -1,0 +1,452 @@
+begintemplate BranchDistCell
+public axon,soma,layer,extstim_site,stim_sr,stim_loc,junction_site,prop_site,IS,stim_length,extstim_sr,extstimrec_loc,connect_branch,connect_subbranch,ratio,s_ratio,ell_c,taper,soma_diam,IS_diam,main_diam,main_length,insertwhole_Traub,insertwhole_modTraub,resetwhole_modTraub,insertwhole_Jonas,resetwhole_Jonas
+external tstop,elength,n_cells
+// This cell is for experiments involing distance of branch site from 
+// the soma. There is one main axon, and up to 3 branch coming off it.
+// The axon has 6 compartments. The main shaft is compartment 1, and the end of the axon is always compartment 5.
+// Compartments 2, 3, 4 are designated for branches.
+// Stimulation is set up in the first branch by default (extstim_site = 2).
+
+create soma[1]
+create axon[6]
+
+objref this,stim_sr,extstim_sr,vip_secs,main_axon_secs
+
+xopen("kinetics_wholecell.hoc")
+
+proc init(){local i,alpha,gamma
+    // kinetics = $1, dx=$2, 
+    // branch ratio = $3
+    // layer = $4 , can be 2, 4, or 5
+    // branch 1 distance in elength = $5
+    // branch 2 distance in elength = $6
+    // branch 3 distance in elength= $7
+    kinetics = $1
+    dx = $2
+    ratio = $3
+    layer = $4
+    n_cells = n_cells+1
+    
+    IS = 0
+    main_shaft = 1
+    extstim_site = 2
+    junction_site = 2 
+    prop_site = 5
+    
+    if(layer==2){ // estimate parameters based on cell reconstructions
+        main_diam = 0.6
+        IS_diam = 1.2
+        s_ratio = 14
+        ell_c = 0.015
+    }else if(layer==4){
+        main_diam = 0.6
+        IS_diam = 1.5
+        s_ratio = 11.2
+        ell_c = 0.015
+    }else if(layer==5){
+        main_diam = 1.2
+        IS_diam = 2
+        s_ratio = 11.4
+        ell_c = 0.02
+    }else{ // use averages for all cells
+        print "Invalid layer: Using guessed averages for cell parameters!"
+        main_diam = 0.6
+        IS_diam = 1.6
+        s_ratio = 12.5
+        ell_c = 0.015
+    }
+    /*    main_diam = 0.6
+    IS_diam = 1.2
+    s_ratio = 13 //21.1641 
+    soma_diam = s_ratio*main_diam
+    ell_c = 0.0265
+    */
+    
+    soma_diam = s_ratio*IS_diam
+    if(kinetics==1){
+        main_length = 4
+    }else{
+        main_length = 8 // electronic length of main shaft
+    }
+    alpha=((sqrt(s_ratio)-1)/(s_ratio-1))^4/(25^4*100*IS_diam^2)
+    gamma=IS_diam^2*(s_ratio-1)^2/4
+    taper = sqrt(-gamma/2 + sqrt(alpha^2*gamma^2+4*alpha*ell_c^4)/(2*alpha))
+    // calculated from equation (16) in Goldstein & Rall (1974)
+    // this is the length from the *generalized* electronic length
+    //taper = Lc*25*sqrt(10*main_diam)*(s_ratio-1)/(sqrt(s_ratio)-1)
+    access axon[main_shaft]
+    
+    // set kinetics the fist time to that elength works
+    if(kinetics==0){
+        insertwhole_Traub()
+    }else if(kinetics==1){
+	insertwhole_Jonas(this,IS)
+    }else{
+        insertwhole_modTraub(this,IS,main_shaft)
+        //print "axon[IS].gbar_nafTraub = ", axon[IS].gbar_nafTraub
+    }
+    
+    soma{
+        pt3dadd(100*(n_cells-1),soma_diam,0,soma_diam)
+        pt3dadd(100*(n_cells-1),0,0,soma_diam)
+        //diam = soma_diam // take average of experimental somata //23
+        //L = soma_diam
+    }
+    axon[IS]{
+        pt3dadd(100*(n_cells-1),0,0,soma_diam) // taken from TypicalCell's geometry
+        pt3dadd(100*(n_cells-1),-taper,0,IS_diam)
+        pt3dadd(100*(n_cells-1),-40,0,main_diam)
+    }	
+    axon[main_shaft]{
+        pt3dadd(100*(n_cells-1),-40,0,main_diam)
+        pt3dadd(100*(n_cells-1),-40 -main_length*elength(main_diam),0,main_diam)
+    }
+    axon[5].diam = main_diam
+    axon[5].L = 4*elength(main_diam)
+    
+    soma connect axon[IS](0), 1
+    axon[IS] connect axon[main_shaft](0), 1
+    if(numarg()>4){
+        bdist1 = $5 // distance of 1st branch
+	axon[main_shaft] connect axon[2](0), bdist1/main_length
+        axon[2]{
+	    diam = main_diam/ratio
+	    L = 4*elength(diam)
+            /*if(n_cells==1){
+                pt3dadd(0,-40-bdist1*elength(main_diam),0,main_diam/ratio)
+                pt3dadd(-4*elength(main_diam/ratio),-40-bdist1*elength(main_diam),0,main_diam/ratio)
+            }else if(n_cells==2){
+                pt3dadd(100,-40-bdist1*elength(main_diam),0,main_diam/ratio)
+                pt3dadd(100+4*elength(main_diam/ratio),-40-bdist1*elength(main_diam),0,main_diam/ratio)
+           }*/
+        }
+    }else{
+        extstim_site = 5
+        junction_site = 5
+        axon[2].diam=0
+        axon[2].L=0
+        axon[2]{ delete_section() }
+    }
+    if(numarg()>5){
+	bdist2 = $6 // distance of 2nd branch
+        axon[main_shaft] connect axon[3](0), bdist2/main_length
+        axon[3].diam = main_diam/ratio
+        axon[3].L = 4*elength(axon[3].diam)
+        if(numarg()>6){
+	    bdist3 = $7 // distance of 3rd branch
+            axon[main_shaft] connect axon[4](0), bdist3/main_length
+            axon[4].diam = main_diam/ratio
+            axon[4].L = 4*elength(axon[4].diam)
+        }else{
+            axon[4].diam = 0
+            axon[4].L = 0
+            axon[4]{ delete_section() }
+        }
+    }else{
+        axon[3].diam = 0
+        axon[3].L = 0
+        axon[3]{ delete_section() }
+        axon[4].diam = 0
+        axon[4].L = 0
+        axon[4]{ delete_section() }
+    }
+    axon[main_shaft] connect axon[5](0),1
+    
+    vip_secs = new SectionList()
+    main_axon_secs = new SectionList()
+    soma{
+	vip_secs.append()
+    }
+    axon[IS]{
+	vip_secs.subtree()
+        main_axon_secs.subtree()
+        main_axon_secs.remove()
+    }
+    
+    if(kinetics!=1){
+        forsec vip_secs{
+            nseg = int(L/dx) + 1
+        }
+    }else{
+        soma.nseg = int(L/dx) + 1
+        axon[IS].nseg = int(L/dx) + 1
+        forsec main_axon_secs{
+            nseg = int(L/(dx*8)) + 1
+        }
+    }
+    
+    define_shape() // helps with stability after partially specifying 3D geometry
+    
+    // insert kinetics again so that pas and pasBasket is set correctly in IS
+    if(kinetics==0){
+        insertwhole_Traub()
+    }else if(kinetics==1){
+        insertwhole_Jonas(this,IS)
+    }else{
+        insertwhole_modTraub(this,IS,main_shaft)
+    }
+    
+    stim_length = 0
+    stim_loc = 0
+    extstimrec_loc = 0
+    choose_stim_site(this,kinetics)
+    
+    //print "tstop = ", tstop   
+}
+
+proc connect_branch(){local branch,location,length
+    // connect collateral branch at specified location
+    branch = $1 // can be 2, 3, or 4
+    location = $2 // in elength along main axon
+    length = $3 // electronic length of branch
+    
+    axon[branch] disconnect()
+    axon[main_shaft] connect axon[branch](0), location/main_length
+    axon[branch]{
+	L = length*elength(diam)
+        nseg = int(L/dx) + 1
+    }
+}
+
+proc connect_subbranch(){local branch,location,length
+    // connect subbranch to collateral branch at specified location
+    branch = $1 // can be 2, 3, or 4
+    subbranch = $2 // can be 3 or 4
+    location = $3 // in elength along collateral branch
+    length = $4 // electronic length of subbranch
+    print "In connect_subbranch: branch=", branch, "subbranch=", subbranch, "location=", location, ", axon[branch].diam=", axon[branch].diam
+    print "elength(diam)=", elength(axon[branch].diam), ", L/elength(diam)=", L/elength(axon[branch].diam)
+    print "location/(L/elength(diam))=", location/(axon[branch].L/elength(axon[branch].diam))
+    
+    axon[subbranch] disconnect()
+    axon[branch]{ 
+	print "location/(L/elength(diam))=", location/(L/elength(diam))
+	connect axon[subbranch](0), location/(axon[branch].L/elength(axon[branch].diam))
+    }	
+    //print "dx=", dx
+    axon[subbranch]{
+	print "diam=", diam, "elength(diam)=", elength(diam), "length=", length, "L=", length*elength(diam)
+	L = length*elength(diam)
+        nseg = int(L/dx) + 1
+	print "L=", L
+    }
+    print "axon[subbranch].L=", axon[subbranch].L
+}
+
+proc choose_stim_site(){local i,avg_diam,totalL,curL,arcl,l1,l2,arcd localobj rvp,sec_list,sn
+    // choose the "stimulation site" of the crux of the axon for the cell
+    // which is always 1/3 of the electrotonic length away from the crux
+    
+    totalL = 0.5*axon[extstim_site].L
+    if(kinetics==1){
+        stim_length = elength(axon[extstim_site].diam)/8
+    }else{ // assume Traub or modTraub
+        stim_length = elength(axon[extstim_site].diam)/3
+    }
+    print "axon[extstim_site].diam=", axon[extstim_site].diam, "elength=", elength(axon[extstim_site].diam)
+    if(stim_length>totalL-stim_length){ // Branch is shorter than 1 electronic length.
+        return
+    }
+    
+    curL = 0
+    axon[extstim_site]{
+        if(stim_loc == 0 && L>stim_length){
+            stim_loc = stim_length/L
+            stim_sr = new SectionRef()
+        }
+        if(extstimrec_loc == 0 && L>totalL-stim_length){
+            extstimrec_loc = (totalL-stim_length)/L
+            extstim_sr = new SectionRef()
+        }
+    }
+}
+
+endtemplate BranchDistCell
+
+begintemplate BranchDistCellAlt
+public axon,soma,extstim_site,stim_sr,stim_loc,junction_site,prop_site,IS,stim_length,extstim_sr,extstimrec_loc,connect_branch,connect_subbranch,ratio,s_ratio,ell_c,taper,soma_diam,IS_diam,main_diam,main_length,insertwhole_Traub,insertwhole_modTraub,resetwhole_modTraub,insertwhole_Jonas,resetwhole_Jonas
+external tstop,elength
+// This cell is for experiments involing distance of branch site away from 
+// the soma. There is one main axon, and up to 3 branch coming off it.
+
+create soma[1]
+create axon[6]
+
+objref this,stim_sr,extstim_sr,vip_secs,main_axon_secs
+
+xopen("kinetics_wholecell.hoc")
+
+proc init(){local i
+    kinetics = $1
+    dx = $2
+    ratio = $3
+    s_ratio = $4    
+    ell_c = $5
+    main_diam = $6
+    soma_diam = s_ratio*main_diam
+    bdist1 = $7 //distance for first branch
+    alpha=((sqrt(s_ratio)-1)/(s_ratio-1))^4/(25^4*100*main_diam^2)
+    gamma=main_diam^2*(s_ratio-1)^2/4
+    taper = sqrt(-gamma/2 + sqrt(alpha^2*gamma^2+4*alpha*ell_c^4)/(2*alpha))
+    // calculated from equation (16) in Goldstein & Rall (1974)
+    // this is the length from the *generalized* electronic length
+    //taper = Lc*25*sqrt(10*main_diam)*(s_ratio-1)/(sqrt(s_ratio)-1)
+    // this assumes you're using Traub kinetics
+    if(kinetics==1){
+        main_length = 5
+    }else{
+        main_length = 10
+    }
+    
+    IS = 0
+    main_shaft=1
+    extstim_site = 2
+    junction_site = 2
+    prop_site = 5
+    access axon[main_shaft]
+    
+    // set kinetics the fist time so that elength works
+    //print "kinetics = ", kinetics
+    if(kinetics==0){
+        insertwhole_Traub()
+    }else if(kineticss==1){
+	insertwhole_Jonas(this,IS)
+    }else{
+        insertwhole_modTraub(this,IS,main_shaft)
+    }
+    
+    soma{
+        diam = soma_diam
+        L = soma_diam
+    }
+    axon[IS]{
+        pt3dadd(0,0,0,soma_diam) 
+        pt3dadd(0,-taper,0,main_diam)
+    }	
+    axon[main_shaft]{
+        pt3dadd(0,-taper,0,main_diam)
+        pt3dadd(0,-taper -main_length*elength(main_diam),0,main_diam)
+    }
+    axon[5].diam = main_diam
+    axon[5].L = 2*elength(main_diam)
+    for(i=2;i<=4;i=i+1){
+        axon[i].diam = main_diam/ratio
+        axon[i].L = 4*elength(axon[i].diam)
+    }
+    
+    soma connect axon[IS](0), 1
+    axon[IS] connect axon[main_shaft](0), 1
+    axon[main_shaft] connect axon[2](0), bdist1/main_length
+    if(numarg()>7){
+        bdist2 = $8
+        axon[main_shaft] connect axon[3](0), bdist2/main_length
+        if(numarg()>8){
+            bdist3 = $9
+            axon[main_shaft] connect axon[4](0), bdist3/main_length
+        }
+    }
+    axon[main_shaft] connect axon[5](0),1
+    
+    vip_secs = new SectionList()
+    main_axon_secs = new SectionList()
+    soma{
+	      vip_secs.append()
+    }
+    axon[IS]{
+	      vip_secs.subtree()
+        main_axon_secs.subtree()
+        main_axon_secs.remove()
+    }
+    
+    if(kinetics != 1){
+        forsec vip_secs{
+            nseg = int(L/dx) + 1
+        }
+    }else{
+        soma.nseg = int(L/dx) + 1
+        axon[IS].nseg = int(L/dx) + 1
+        forsec main_axon_secs{
+            nseg = int(L/(dx*8)) + 1
+        }
+    }
+
+    // insert kinetics again so that pas and pasBasket is set correctly in IS
+    if(kinetics==0){
+        insertwhole_Traub()
+    }else if(kinetics==1){
+        insertwhole_Jonas(this,IS)
+    }else{
+        insertwhole_modTraub(this,IS,main_shaft)
+    }
+    
+    stim_length = 0
+    stim_loc = 0
+    extstimrec_loc = 0
+    choose_stim_site(this,kinetics)
+    //print "axon[junction_site]=", axon[junction_site].diam
+    
+}
+
+proc connect_branch(){local branch,location,length
+    // connect collateral branch at specified location
+    branch = $1 // can be 2, 3, or 4
+    location = $2 // in elength along main axon
+    length = $3 // elength of branch
+    
+    axon[branch] disconnect()
+    axon[main_shaft] connect axon[branch](0), location/main_length
+    axon[branch]{
+	L = length*elength(diam)
+        nseg = int(L/dx) + 1
+    }
+}
+
+proc connect_subbranch(){local branch,location,length
+    // connect collateral branch at specified location
+    branch = $1 // can be 2, 3, or 4
+    subbranch = $2 // can be 3 or 4
+    location = $3 // in elength along main branch
+    length = $4 // electronic length of subbranch
+    
+    axon[subbranch] disconnect()
+    axon[branch]{ 
+	connect axon[subbranch](0), location/(L/elength(diam))
+    }	
+    axon[subbranch]{
+	L = length*elength(diam)
+        nseg = int(L/dx) + 1
+    }
+}
+
+proc choose_stim_site(){local i,avg_diam,totalL,curL,arcl,l1,l2,arcd localobj cell,rvp,sec_list,sn
+    // choose the "stimulation site" of the crux of the axon for the cell
+    // which is always 1/4 of the electrotonic length away from the crux
+    cell = $o1
+    kinetics = $2
+    
+    totalL = 0.5*cell.axon[cell.extstim_site].L
+    if(kinetics==1){
+        cell.stim_length = elength(cell.axon[cell.extstim_site].diam)/3
+    }else{
+        cell.stim_length = elength(cell.axon[cell.extstim_site].diam)/3
+    }
+    print "elength=", elength(cell.axon[cell.extstim_site].diam)
+    if(cell.stim_length>totalL-cell.stim_length){
+        print "totalL = ", totalL, ", stim_length = ", cell.stim_length, ", extstim_length = ", totalL-cell.stim_length
+        return
+    }
+    
+    curL = 0
+    cell.axon[cell.extstim_site]{
+        if(cell.stim_loc == 0 && L>cell.stim_length){
+            cell.stim_loc = cell.stim_length/L
+            cell.stim_sr = new SectionRef()
+        }
+        if(cell.extstimrec_loc == 0 && L>totalL-cell.stim_length){
+            cell.extstimrec_loc = (totalL-cell.stim_length)/L
+            cell.extstim_sr = new SectionRef()
+        }
+    }
+}
+
+endtemplate BranchDistCellAlt

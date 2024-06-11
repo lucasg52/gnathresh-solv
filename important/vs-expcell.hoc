@@ -1,0 +1,63 @@
+// This simulation setup tests the sensitivity of vs on AP propagation from a side branch
+
+load_file("nrngui.hoc") // Load nrngui.hoc, the main executable for NEURON
+load_file("simulation_base.hoc") // Load simulation_base.hoc, which contains all information for simulations
+dt = 0.001 // Set time step in simulations
+
+// Declare new variables in this file:
+objref cutoff_file
+strdef cutoff_file_name,run_file_name
+
+// Assume g_basket=0, g_chand=0, reversal potentials are -70, -50 respectively
+// Vary the somatic voltage through the passive current: g_pas=2e-3, e_pas=-80 mV, -70 mV, -60 mV, -50 mV
+// Assume IS leak is (e_pas = -70, g_pas = 1e-3)
+
+// Some default values to get started, normally passed in as variables
+ratio = 3 // ratio between main axon and branch, options are typically 2, 3, 4, 6
+vs = -70 // somatic voltage, options are typically -80, -70, -60
+layer = 5 // neocortical layer, options are 2, 4, 5
+
+load_axon(8,4,ratio,layer,0.3,0.3,0.3) // Create a new axon with parameters:
+// type=8 - BranchDistCell, used for branch propagation experiments
+// kinetics=4 - modified Traub kinetics (naf_Traub.mod, kdf_Traub.mod)
+// branch distance=0 - distance of branch along the main axon
+// This function also sets up a stimulus in the axon and other global parameters.
+
+setup_session() // Open windows in NEURON to see simulation interactively.
+
+// Open a new file to record gNa cutoffs
+cutoff_file = new File() 
+sprint(cutoff_file_name,"vs-expcell_L%d-rat%g-vs%d.out",layer,ratio,vs)
+//sprint(cutoff_file_name,"/projectnb/msprfmun/neuron/vs-expcell_L%d-rat%g-vs%d.out",layer,ratio,vs)
+cutoff_file.wopen(cutoff_file_name)
+
+set_soma_leak(test_axon,vs,2e-3) // Set soma leak/passive current
+
+// We are ready to go! You can either press the "Init & Run" button or type:
+//run()
+
+// The sidebranch fired twice, but the spike only propagated once to the main axon.
+// The simulation is set up to automatically record spikes that occur, by saving the voltage traces at the sites extstimrec_site and prop_site. 
+calc_spikes() // calculate spike times from voltage traces
+n_stim // number of spikes that occurred at extstimrec_site
+n_prop // number of spikes that occurred at prop_site
+st_extstim.printf() // print the spike times at extstimrec_site
+st_prop.printf() // print the spike times at prop_site
+
+// The sodium conductance changes the excitability of the axon, and so changes how easy it is for spikes to propagate.
+// To change the sodium conductance in the axon. 
+test_axon.axon[1].gbar_nafTraub // see what the sodium conductance is now
+gNa = 0.3 // choose another gNa
+test_axon.resetwhole_modTraub(gNa) // set gNa throughou the axon
+//run() // run again
+// Now everything runs smoothly.
+
+// You can set the distance and connect the branch to a different location along the main axon
+dist = 0.3
+test_axon.connect_branch(2,dist,4) // Connect compartment 2 (1st compartment available for branches) to main axon at distance "dist". Make the electronic length of the branch 4.
+
+test_axon.connect_branch(3,0.6,4)
+run()    
+
+
+//quit()

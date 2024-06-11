@@ -1,0 +1,250 @@
+proc insertwhole_Traub(){
+    forall {
+        insert pas
+        e_pas = -70
+        cm = 0.9
+    }
+    forsec "axon" {
+        g_pas = 1/1000
+        Ra =   100.0
+        insert nafTraub
+        ena = 50
+        gbar_nafTraub =   0.45
+        insert kdrTraub
+        ek = -95
+        gbar_kdrTraub =   0.45
+    }
+    forsec "soma" {
+        g_pas = 1/50000
+        Ra = 250
+    }
+    forsec "dendrite" {
+        g_pas = 1/50000
+        Ra = 250
+    }
+    tstop = 20
+}
+
+proc uninsertwhole_Traub(){
+    forall {
+        uninsert pas
+        uninsert nafTraub
+        uninsert kdrTraub
+    }
+}
+
+proc insertwhole_modTraub(){local needISchild localobj sref
+    forall {
+        insert pas
+        e_pas = -70
+        cm = 0.9
+    }
+    forsec "axon" {
+        g_pas = 1/1000
+        Ra =   100.0
+        insert nafTraub
+        gbar_nafTraub =   0.2
+        ena = 50
+        insert kdrTraub
+        gbar_kdrTraub =   0.2
+        ek = -95
+    }
+    this.axon[IS]{
+	needISchild=1
+        for(x){
+            if(x*L<40){
+                gbar_nafTraub(x) =   0.45
+                gbar_kdrTraub(x) =   0.45
+            }else{
+		needISchild=0
+	    }
+        }
+	if(needISchild){
+	    print "need to insert higher g_Na into IS child"
+	}
+        //insert pasChand
+    }
+    if(needISchild){
+	axon[ISchild]{
+	    for(x){
+		if(this.axon[IS].L + x*L<40){
+		    gbar_nafTraub(x) = 0.45
+		    gbar_kdrTraub(x) = 0.45
+		}
+	    }
+	}
+        //insert pasChand
+    }
+    forsec "soma" {
+        g_pas = 2e-3 // higher conductance makes up for currents not being modeled
+        //1/50000
+        Ra = 250
+        /*insert nafTraub
+        gbar_nafTraub = 0.2
+        insert kdrTraub
+        gbar_kdrTraub = 0.2*/
+    }
+    forsec "dendrite" {
+        g_pas = 1/50000
+        Ra = 250
+    }
+    soma{
+        //insert pasBasket
+        sref = new SectionRef()
+    }
+    for(i=0;i<=sref.nchild-1;i=i+1){
+        sref.child[i]{
+            //insert pasBasket
+        }
+    }
+    tstop = 20
+}
+
+proc resetwhole_modTraub(){local needISchild,gna,ISgna
+    // call after insert_modTraub to adjust g_na in axons
+    gna = $1
+    
+    if(numarg()>1){
+        ISgna = $2
+    }else{
+        ISgna = 0.45
+    }
+    
+    forsec "axon" {
+        gbar_nafTraub = gna
+        gbar_kdrTraub = gna
+    }
+    axon[IS]{
+        needISChild = 1
+        for(x){
+            if(x*L<40){
+                gbar_nafTraub(x) = ISgna
+                gbar_kdrTraub(x) = ISgna
+            }else{
+                needISchild = 0
+            }
+        }
+    }
+    //print "needISchild = ", needISchild
+    if(needISchild){
+	axon[ISchild]{
+	    for(x){
+		if(axon[IS].L + x*L<40){
+		    gbar_nafTraub(x) = ISgna
+		    gbar_kdrTraub(x) = ISgna
+		}
+	    }
+	}
+    }    
+}
+
+proc insertwhole_Jonas(){local needISchild localobj sref
+    forall {
+	insert pas
+	g_pas =   1/36000
+	e_pas = -85
+	Ra =   163
+	cm = 1
+    }
+    forsec "axon" {
+	insert nafJonas
+	ena = 60
+	insert kdrJonas
+	ek = -85
+        
+	gbar_nafJonas =   0.03
+	gbar_kdrJonas =  0.03
+    }
+    this.axon[IS]{
+	needISchild=1
+        for(x){
+            if(x*L<40){
+                gbar_nafJonas(x) =   0.096
+                gbar_kdrJonas(x) =   0.096
+            }else{
+		needISchild=0
+	    }
+        }
+	if(needISchild){
+	    print "need to insert higher g_Na into IS child"
+	}
+        //insert pasChand
+    }
+    if(needISchild){
+	axon[ISchild]{
+	    for(x){
+		if(this.axon[IS].L + x*L<40){
+		    gbar_nafTraub(x) = 0.096
+		    gbar_kdrTraub(x) = 0.096
+		}
+	    }
+	}
+        //insert pasChand
+    }
+    /*forsec "soma" {
+	      gbar_nafJonas =   0.027
+	      gbar_kdrJonas =  0.027
+    }
+    forsec "dendrite" {
+	      gbar_nafJonas =   0.027
+	      gbar_kdrJonas =  0.027
+    }*/
+    soma{
+        //insert pasBasket
+        sref = new SectionRef()
+    }
+    /*for(i=0;i<=sref.nchild-1;i=i+1){
+        sref.child[i]{
+            insert pasBasket
+        }
+    }*/
+    tstop = 70
+    //print "tstop = ", tstop
+}
+
+proc uninsertwhole_Jonas(){
+  forall {
+    uninsert pas
+    uninsert nafJonas
+    uninsert kdrJonas
+  }
+}
+
+proc resetwhole_Jonas(){local needISchild,gna,ISgna
+    // call after insert_modTraub to adjust g_na in axons
+    gna = $1
+    
+    if(numarg()>1){
+        ISgna = $2
+    }else{
+        ISgna = 0.096
+    }
+    
+    forsec "axon" {
+        gbar_nafJonas = gna
+        gbar_kdrJonas = gna
+    }
+    axon[IS]{
+        needISChild = 1
+        for(x){
+            if(x*L<40){
+                gbar_nafJonas(x) = ISgna
+                gbar_kdrJonas(x) = ISgna
+            }else{
+                needISchild = 0
+            }
+        }
+    }
+    //print "needISchild = ", needISchild
+    if(needISchild){
+	axon[ISchild]{
+	    for(x){
+		if(axon[IS].L + x*L<40){
+		    gbar_nafJonas(x) = ISgna
+		    gbar_kdrJonas(x) = ISgna
+		}
+	    }
+	}
+    }    
+}
+
