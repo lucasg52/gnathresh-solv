@@ -1,0 +1,5 @@
+We still do not have AP propogation for the most basic cell. (g_na = 0.2)
+- Possible that we could still have too low of g_na and/or I missed some pas parameters
+  - I could implement code that requires ALL parameters to be changed from defaults, and warns for those which arn't, to make sure we know what all paramaters should be
+
+- possible that I messed up the taper on the initial segment (I implemented my own thing for it)
