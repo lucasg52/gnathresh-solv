@@ -23,7 +23,7 @@ traubdict = {
             "Ra" : 250
     }
 }
-traubdict_mod = {
+traubdict_mod = (traubdict.copy()).update({
         "soma" : {
             "g_pas" : 2e-3, # // higher conductance makes up for currents not being modeled
             "Ra" : 250
@@ -32,7 +32,7 @@ traubdict_mod = {
             "g_pas" : 1/50000,
             "Ra" : 250
         }
-}
+})
 
 jonasdict = {
     "axon" : {
@@ -77,11 +77,21 @@ def unins_Traub():
 def inswho_Traub():
     print("uninsert_Traub: not implemented")
 
-def insmod_Traub(sec):
+def insmod_Traub(sec, forsec): # declares tstpo=20 at the end.
+    forsecdict = traubdict 
+    assert(forsec in forsecdict)
+    
+    sec.insert("pas")
+    if forsec == "axon":
+        sec.insert("kdrTraub")
+        sec.insert("nafTraub")
+    attrdict = forsecdict[forsec]
     if sec.name == "IS":
         sec.gbar_nafTraub =   0.45
         sec.gbar_kdrTraub =   0.45
         # you dont need IS child.
+    for k in attrdict:
+        setattr(sec, k, attrdict[k])
 
             
 

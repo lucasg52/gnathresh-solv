@@ -24,6 +24,9 @@ class ExpcellTemplate:
             gid = 0,
             kinetics = 0
             ):
+        self.dx = dx # i belive this is the only paramater that really matters (for now)
+
+        self.soma = h.Section(          name = "soma")
         self.IS = h.Section(            name = "IS")
         self.main_shaft = h.Section(    name = "main_shaft")
         #self.extstim_site = h.Section(  name = "extstim_site")
@@ -105,11 +108,10 @@ class ExpcellTemplate:
         self._setup_biophysics()
         self._setup_morphology()
     def _setup_biophysics(self):
-        map(lambda args : kin.insmod_Traub(*args),
-                (self.soma,         "soma"),
-                (self.main_shaft,   "axon"),
-                (self.IS,           "axon"),
-                (self.prop_site,    "axon"))
+        kin.insmod_Traub(self.soma,         "soma")
+        kin.insmod_Traub(self.main_shaft,   "axon")
+        kin.insmod_Traub(self.IS,           "axon")
+        kin.insmod_Traub(self.prop_site,    "axon")
     def normalize_dx(self): # line 166, not clear why some sections get normalized differently. so I am just assuming it is homogenous. also made my own subroutine 
         for sec in self.all:
             sec.nseg = int(sec.L/self.dx) + 1
@@ -147,7 +149,7 @@ class ExpcellTemplate:
         #the following definitions for section diameter are taken from lines 89-105. 
         self.soma.L = self.soma.diam = self.soma_diam
         self.IS.L = 40 # line 98 
-        self.main_shaft.L = self.main_length * eq.elength(d = self.main_diam)
+        self.main_shaft.L = self.main_length * eq.elength(self.main_shaft, d = self.main_diam)
         self.normalize_dx() # technically this is executed at the end
         self.taper_IS() # this was implimented entirely on my own discretion since the old code seemed to be letting neuron taper it using pt3dadd... and they also normalized dx afterwards, which seems like a bad idea since it would probably just rebin the segment diameters 
 
@@ -174,6 +176,12 @@ class ExpcellTemplate:
 class Expcell_demo(ExpcellTemplate):
     def __init__(self, *args):
         super().__init__(*args)
+        for sec in self.all:
+            try:
+                sec.gbar_nafTraub = 0.2
+                sec.gbar_kdrTraub = 0.005 #unsure about this one
+            except AttributeError:
+                pass
         self.set_soma_leak(
                 -70, # (vs-expcell.hoc, line 17)// somatic voltage, options are typically -80, -70, -60
                 0.002 # (vs-expcell.hoc, line 34)

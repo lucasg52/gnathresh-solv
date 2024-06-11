@@ -1,0 +1,529 @@
+load_file("nrngui.hoc")
+
+func gr(){
+    // Calculuate geometric ratio using the diamter of the parent branch ($1) and the 
+    // diameters of two daughter branches ($2, $3)
+  return ($2^1.5 + $3^1.5)/($1^1.5)
+}
+
+func elength(){
+  // calculate the electrotonic length as given by Tuckwell p. 137
+  // first input is diameter
+  d = $1
+  return 0.5*sqrt(d/(Ra*g_pas))*100 // 100 is for conversion to um
+}
+
+func timed_run(){local x,y
+    // Time how long the run takes.
+    x = startsw()
+    run()
+    y = startsw() - x
+    return y
+}
+
+func round(){local x,up,down
+    // Round the input ($1) to the nearest integer.
+    x = $1
+    down = int(x)
+    up = down + 1
+    if(x-down <= up-x){
+	return down
+    }else{
+	return up
+    }
+}
+
+n_cells = 0 // Total number of cells in simulation.
+
+load_file("axon_templates.hoc") // Load axon templates based on real cells
+load_file("cell_templates.hoc") // Load cell templated based on real cells
+load_file("expcell_templates.hoc") // Load simplified axon templates
+load_file("junction_stats.hoc") // Load function for finding statistics for branch points
+//load_file("gap_junction.hoc")
+
+// Variables declared in this file
+strdef cell_name // neuromorpho.org cell name
+objectvar test_axon // axon simulated in the experiment
+objectvar stim1,stim2 // two stimuli to apply to the axon
+objectvar v_extstim, v_stim, v_prop // vectors holding the voltage at the external stimulus site, a site near the stimulus to see if the stimulus induced a spike, and the propagation site
+objectvar st_extstim, st_stim, st_prop // vectors holding the spike times at each site
+objectvar t_f //firing times of extstim_site, stim_site, and prop_site
+objref axon1,axon2,gj // axons left over from testing gap junctions
+objref v_soma1,v_soma2
+objref nil // NULL reference for comparison
+dx = 1 // length of segments in NEURON
+//secondorder = 1
+
+dt = 0.001
+Dt = dt//0.1
+
+func courant_number(){
+  // calculate the Courant number as defined by Iserles p. 271
+  // Factor to get ratio unitless conferred by John Burke
+  return (dt/dx^2)*(test_axon.axon[test_axon.junction_site].diam/2)/(2*Ra*cm)*10^7
+}
+
+proc load_axon(){local nv,i,j localobj sub_sections,sec_ref
+    // Create new axon. Inputs are:
+    // $1 - axon type, 0=SimpleAxon, 1=TypcialAxon, 2=ComplexAxon, 3=TypicalCell, 4=ShortISCell, 5=MedISCell, 6=ComplexShortISCell, 7=GenericCell, 8=BranchDistCell
+    // $2 - kinetics determining conductances in the cell
+    // All other inputs are determined by the cell type, in order of their init() function.
+    // Also set up stimulus as well as spike_start parameters.
+    if($1==0){
+        test_axon = new SimpleAxon($2,dx)
+    }else if($1==1){
+        test_axon = new TypicalAxon($2,dx)
+    }else if($1==2){
+        test_axon = new ComplexAxon($2,dx)
+    }else if($1==3){
+        test_axon = new TypicalCell($2,dx)
+    }else if($1==4){
+        test_axon = new ShortISCell($2,dx)
+    }else if($1==5){
+        test_axon = new MedISCell($2,dx)
+    }else if($1==6){
+        test_axon = new ComplexShortISCell($2,dx)
+    }else if($1==7){ //generic cell
+	test_axon = new GenericCell($s3,$4,$5,$6,$7,$2,dx)
+	// $s3 = cell name
+	// $4 = IS
+	// $5 = prop_site
+	// $6 = extstim_site
+	// $7 = junction_site
+	// $2 = kinetics
+    }else if($1==8){ // Branch-Distance cell for experiments
+        if(numarg()==5){
+            test_axon = new BranchDistCell($2,dx,$3,$4,$5)
+        }else if(numarg()==6){
+            test_axon = new BranchDistCell($2,dx,$3,$4,$5,$6)
+        }else{// if(numarg()==7){
+            test_axon = new BranchDistCell($2,dx,$3,$4,$5,$6,$7)
+        }
+        // kinetics = $1, dx=$2, 
+        // branch ratio = $3
+        // layer = $4
+        // branch 1 distance = $5
+        // branch 2 distance = $6
+        // branch 3 distance = $7
+    }else{ // Branch-Distance-Alt cell for experiments
+        if(numarg()==7){
+            test_axon = new BranchDistCellAlt($2,dx,$3,$4,$5,$6,$7)
+        }else if(numarg()==8){
+            test_axon = new BranchDistCellAlt($2,dx,$3,$4,$5,$6,$7,$8)
+        }else{// if(numarg()==9){
+            test_axon = new BranchDistCellAlt($2,dx,$3,$4,$5,$6,$7,$8,$9)
+        }
+        // kinetics = $1, dx=$2, 
+        // branch ratio = $3
+        // soma ratio = $4
+        // ell_c = $5 : electronic length of cone
+        // main diam = $6
+        // branch 1 distance = $7
+        // branch 2 distance = $8
+        // branch 3 distance = $9
+    }
+    
+    n_cells = 1
+    access test_axon.axon[test_axon.extstim_site]
+    kinetics = $2
+    stim_loc = test_axon.stim_loc
+    extstimrec_loc = test_axon.extstimrec_loc
+    
+    test_axon.axon[test_axon.extstim_site]{
+        stim1 = new IClamp(0.5)
+        stim2 = new IClamp(0.5)
+    }
+    
+    stim1.del = 5
+    stim1.dur = 0.3125
+    stim1.amp = 0.2
+    stim2.del = 10
+    stim2.dur = 0.3125
+    stim2.amp = 0.2
+    
+    // cutoff for spike to start is e_pas+(ena-e_pas)/3
+    // cutoff for spike to end depends on kinetics
+    test_axon.axon[test_axon.extstim_site]{
+        spike_start = e_pas + (ena-e_pas)/3
+        if(kinetics==1){
+            spike_end = e_pas + (ena-e_pas)/6
+        }else{
+            spike_end = e_pas + (ena-e_pas)/4
+        }
+    }
+    print "in load_axon test_axon.axon[test_axon.junction_site].diam=", test_axon.axon[test_axon.junction_site].diam
+}
+
+proc setup_session(){
+    // Set up session with interactive windows in NEURON.
+    load_file("propagation_test.ses")
+}
+
+proc setup_axon_stim(){
+    // Set up axon stimulus in test_axon.extstim_site.
+    test_axon.axon[test_axon.extstim_site]{
+        stim1 = new IClamp(0.5)
+        stim2 = new IClamp(0.5)
+    }
+    stim1.del = 5
+    stim1.dur = 0.3125
+    stim1.amp = 0.2
+    stim2.del = 10
+    stim2.dur = 0.3125
+    stim2.amp = 0.2
+}
+
+proc init(){
+    // Initial procedure, called when overall "run" is called.
+    //print "calling simulation_base init"
+    n_extstim = 0
+    n_stim = 0
+    n_prop = 0
+    t_f = new Vector(6,-1)
+    v_extstim = new Vector(int(tstop/Dt)+1)
+    v_extstim.record(&test_axon.extstim_sr.sec.v(extstimrec_loc),Dt)
+    v_stim = new Vector(int(tstop/Dt)+1)
+    v_stim.record(&test_axon.stim_sr.sec.v(stim_loc),Dt)
+    v_prop = new Vector(int(tstop/Dt)+1)
+    v_prop.record(&test_axon.axon[test_axon.prop_site].v(0.5),Dt)
+    
+    st_extstim = new Vector()
+    st_stim = new Vector()
+    st_prop = new Vector()
+    test_axon.axon[test_axon.IS].g_pas = test_axon.axon[test_axon.prop_site].g_pas
+    forall{
+	for(x){
+	    v(x) = e_pas(x)
+	}
+    }
+    
+    finitialize()//test_axon.axon[test_axon.extstim_site].e_pas)
+}
+
+obfunc spike_times(){local ind,n_spikes localobj v_vec,v_sub,t_sub,spikes
+    // take in a vector with voltage data, and count the number of spikes
+    spikes = new Vector(10)
+    n_spikes = 0
+    
+    v_vec = $o1
+    v_sub = new Vector()
+    v_sub.copy(v_vec)
+    t_sub = new Vector(v_sub.size())
+    t_sub.indgen(Dt)
+    while(1){
+        ind = v_sub.indwhere(">=",spike_start)
+        if(ind != -1){
+            if(spikes.size() == n_spikes){
+                spikes.resize(spikes.size()+10)
+            }
+            spikes.x[n_spikes] = t_sub.x[ind]
+            n_spikes = n_spikes + 1
+            v_sub.remove(0,ind)
+            t_sub.remove(0,ind)
+            ind = v_sub.indwhere("<=",spike_end)
+            if(ind != -1){
+                v_sub.remove(0,ind)
+                t_sub.remove(0,ind)
+            }else{
+                break
+            }
+        }else{
+            break
+        }
+    }
+    spikes.resize(n_spikes)
+    return spikes
+}
+
+proc calc_spikes(){local i,n
+    // calculate spike times based on the last simulation
+    st_extstim = spike_times(v_extstim)
+    n_extstim = st_extstim.size()
+    st_stim = spike_times(v_stim)
+    n_stim = st_stim.size()
+    st_prop = spike_times(v_prop)
+    n_prop = st_prop.size()
+    n = 0
+    for(i=0;i<2 && i<st_extstim.size();i=i+1){
+        t_f.x[n] = st_extstim.x[i]
+        n = n + 1
+    }
+    n = 2
+    for(i=0;i<2 && i<st_stim.size();i=i+1){
+        t_f.x[n] = st_stim.x[i]
+        n = n + 1
+    }
+    n = 4
+    for(i=0;i<2 && i<st_prop.size();i=i+1){
+        t_f.x[n] = st_prop.x[i]
+        n = n + 1
+    }
+}
+
+proc advance(){local vmax
+    // Called whenever NEURON advances from one time step to another.
+    fadvance()
+    
+    if(t>stim2.del+1 && t-int(t)<dt){
+        vmax = test_axon.axon[test_axon.extstim_site].e_pas
+        forall{
+            for(x){
+                if(v(x)>vmax){
+                    vmax = v(x)
+                }
+            }
+        }
+        if(vmax<spike_end){ // Voltage is below threshold for end-of-spike.
+            //print "t=", t, ", vmax = ", vmax
+            stoprun = 1
+        }else{
+            //print "t=", t, ", vmax = ", vmax, " > ", spike_end
+        }
+    }
+}
+
+load_file("PropagationSearch.hoc") // Load template PropagtionSearch, which hold many functions to search for gNa cutoffs.
+
+proc run_search(){localobj cutoffs,vcutoffs,cutoff_file,run_file,ps
+    // run a propagation search, printing cutoff information to a new cutoff_file 
+    // ($o1) and saving the simulation database in the file run_file_name ($s2)
+    // find cutoffs up to resolution e(-$3)
+    cutoff_file = $o1
+    run_file = new File()
+    run_file.wopen($s2)
+    ps = new PropagationSearch()
+    ps.kinetics = kinetics
+    
+    if(numarg()>3){ // do ISgNa cutoff
+	print "finding ISgNa cutoff"
+	cutoffs = ps.find_cutoffs(ps.pc_ISgNa,$3)
+    }else{
+	print "finding regular gNa cutoff"
+	cutoffs = ps.find_cutoffs(ps.pc_gNa,$3)
+    }
+    
+    if(ps.n_simulations>0){
+	ps.simulation_database.resize(ps.n_simulations,ps.simulation_database.ncol)
+	ps.simulation_database.fprint(run_file,"%g\t")
+    }
+    run_file.close()
+    
+    vcutoffs = cutoffs.transpose().to_vector()
+    vcutoffs.printf(cutoff_file,"%g\t")
+    cutoff_file.flush()
+}
+
+proc refine_search(){local ncol,nrow,exists,parameter_choice localobj cutoffs,vcutoffs,cutoff_file,run_file,ps,run_data
+    // run a propagation search, printing cutoff information to an existing cutoff_file ($o1) ,
+    // refining the search in that file. 
+    // and saving the simulation database in the file run_file_name ($s2)
+    // find cutoffs up to resolution e(-$3)
+    cutoff_file = $o1
+    ps = new PropagationSearch()
+    ps.kinetics = kinetics
+    if(numarg()>3){
+        parameter_choice = ps.pc_ISgNa
+    }else{
+        parameter_choice = ps.pc_gNa
+    }
+    
+    run_file = new File()
+    exists = run_file.ropen($s2)
+    if(exists){
+	run_data = new Matrix(10,10)
+	run_data.scanf(run_file)
+	run_file.close()
+	cutoffs = ps.find_cutoffs(parameter_choice,$3,run_data)
+    }else{
+	cutoffs = ps.find_cutoffs(parameter_choice,$3)
+    }
+    
+    run_file.wopen($s2)
+    ps.simulation_database.resize(ps.n_simulations,ps.simulation_database.ncol)
+    ps.simulation_database.fprint(run_file,"%g\t")
+    run_file.close()
+    
+    vcutoffs = cutoffs.transpose().to_vector()
+    vcutoffs.printf(cutoff_file,"%g\t")
+    cutoff_file.flush()
+}
+
+proc print_voltage_traces(){localobj vfile
+    // Print the actual voltage traces from the simulation, which can then be loaded to other programs such as Matlab.
+    vfile = new File()
+    vfile.wopen($s1)
+     
+    v_extstim.printf(vfile, "%g\t")
+    v_prop.printf(vfile, "%g\t")
+}
+
+proc set_arg(){
+    // set arguments for running vs-arg_exp
+    geom = $1
+    extstim_site = $2
+    junction_site = $3
+}
+
+proc set_generic_arg(){
+    // set arguments for *-generic_exp.hoc
+    cell_name = $s1 // cell geometry
+    print "in set_generic_arg: cell_name is ", cell_name
+    IS = $2 // initial segment
+    prop_site = $3
+    extstim_site = $4
+    junction_site = $5
+}
+
+proc set_expcell_arg(){
+    // set arguments for *-expcell*.hoc
+    layer=$1
+    ratio = $2
+    vs = $3
+    g_basket = $4
+    g_chand = $5
+}
+
+proc set_expcell_dist(){
+    // set distance arguments for expcell experiments
+    dist1_beg = $1
+    dist1_end = $2
+    if(numarg()>2){
+	dist2_beg = $3
+	dist2_end = $4
+	if(numarg()>4){
+	    dist3_beg = $5
+	    dist3_end = $6
+	}
+    }
+}
+
+/*proc set_g_chand(){local needISchild
+    // set the passive current that mimics chandelier cells on first
+    // 40 um of IS
+    test_axon.axon[test_axon.IS]{
+	needISchild = 1
+        for(x,0){
+            if(x*L<40){
+                g_pasChand(x) = $1
+            }else{
+		needISchild = 0
+		break
+	    }
+        }
+    }
+    if(needISchild){
+	test_axon.axon[$2]{
+	    for(x){
+		if(test_axon.axon[test_axon.IS].L + x*L < 40){
+		    g_pasChand(x) = $1
+		}
+	    }
+	}
+    }
+}*/
+
+proc set_IS_myelin(){
+    // with argument "1", put myelin between 40 um from soma 
+    // to first branch point
+    test_axon.axon[test_axon.IS]{
+        if($1){ // put myelin on
+            for(x,0){
+                if(x*L>40){
+                    g_pas(x) = g_pas(0)/5000
+                    cm(x) = cm(0)/50
+                    if(kinetics==0 || kinetics==4){
+                        gbar_nafTraub(x) = 0
+                        gbar_kdrTraub(x) = 0
+                    }
+                }
+            }
+        }else{ // take myelin off
+            for(x,0){
+                if(x*L>40){
+                    g_pas(x) = test_axon.axon[test_axon.prop_site].g_pas
+                    cm(x) = test_axon.axon[test_axon.prop_site].cm
+                    if(kinetics==0 || kinetics==4){
+                        gbar_nafTraub(x) = test_axon.axon[test_axon.prop_site].gbar_nafTraub
+                        gbar_kdrTraub(x) = test_axon.axon[test_axon.prop_site].gbar_kdrTraub
+                    }
+                }
+            }
+        }
+    }
+}
+
+proc set_soma_stim(){
+    // mimic soma being stimulated, either by far away PSPs or directly
+    // arguments: amp, del, duration
+    test_axon.se.amp2 = $1
+    test_axon.se.amp3 = test_axon.se.amp1
+    test_axon.se.dur1 = $2
+    test_axon.se.dur2 = $3
+    test_axon.se.dur3 = tstop
+}
+
+proc set_soma_leak(){local e,g localobj cell,sref
+    cell = $o1
+    e = $2
+    g = $3
+    cell.soma{
+        e_pas = e
+        g_pas = g
+        sref = new SectionRef()
+    }
+    for(i=0;i<=sref.nchild-1;i=i+1){
+        sref.child[i]{
+	    ifsec "dendrite"{
+		for(x){
+                    if(diam(x)>5){
+			e_pas(x) = e
+			g_pas(x) = g
+                    }
+		}
+	    }
+        }
+    }
+}
+
+/*proc set_basket(){local e,g localobj cell,sref
+    cell = $o1
+    e = $2
+    g = $3
+    cell.soma{
+        e_pasBasket = e
+        g_pasBasket = g
+        sref = new SectionRef()
+    }
+    for(i=0;i<=sref.nchild-1;i=i+1){
+        sref.child[i]{
+            e_pasBasket = e
+            for(x){
+                if(diam(x)>5){
+                    g_pasBasket(x) = g
+                }
+            }
+        }
+    }
+}*/
+
+proc set_extstim_site(){
+    test_axon.extstim_site = $1
+    test_axon.junction_site = $2
+    
+    test_axon.stim_loc = 0
+    test_axon.extstimrec_loc = 0
+    choose_stim_site(test_axon,kinetics)
+    
+    test_axon.axon[$1]{
+        stim1 = new IClamp(0.5)
+        stim2 = new IClamp(0.5)
+    }
+    
+    stim1.del = 5
+    stim1.dur = 0.3125
+    stim1.amp = 0.2
+    stim2.del = 10
+    stim2.dur = 0.3125
+    stim2.amp = 0.2
+}
+
