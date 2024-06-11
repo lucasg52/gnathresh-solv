@@ -29,10 +29,12 @@ Misc:
 		0.001 (vs-expcell...hoc files)
 	- model:
 		Traub is used in vs-expcell.hoc
+		Modified Traub appears to be M.K's model of choice (vs_expcell.hoc)
+		standard hh is not used
 	- sim time:
 		tstop = 20 (kinetics_wholecell.hoc, proc insertwhole_Traub)(im assuming tstop is a global var that is being accessed..?)
 		according to laura this is a parameter that exists in the gui but its not clear if neuron.h has an attribute equivalent 
 
 Needed:
 	- dx
-	- any other pas or hh params I can get my hands on
+	- any other pas params I can get my hands on (already looked thru traub params thoroughly, standard hh not used)
