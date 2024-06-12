@@ -66,7 +66,7 @@ def setup_stim(seg):
     stim = h.IClamp(seg)
     stim.delay = 5
     stim.dur = 1
-    stim.amp = 0.05
+    stim.amp = 20
 
 def setup_record():
     global somaV
