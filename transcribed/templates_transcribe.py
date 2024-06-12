@@ -31,6 +31,7 @@ class ExpcellTemplate:
         self.main_shaft = h.Section(    name = "main_shaft")
         #self.extstim_site = h.Section(  name = "extstim_site")
         #self.junction_site = h.Section( name = "junction_site" )
+                # these are unused since in the original code, they are destroyed if lengths d2 and d3 are not provided
         self.prop_site = h.Section(     name = "prop_site")
 
 
@@ -63,7 +64,7 @@ class ExpcellTemplate:
         s_ratio =   self.s_ratio
         ell_c =     self.ell_c  
         self.soma_diam = s_ratio*IS_diam
-        #god yall code is ugly *smh*
+        
         if(kinetics==1):
             self.main_length = 4
         else:
@@ -164,7 +165,7 @@ class ExpcellTemplate:
         cell.soma.e_pas = e
         cell.soma.g_pas = g
 
-    def set_extim_site(self, sec):# i have genuinely no idea what the old code was supposed to do with the paramaters, so this will have none.
+    def set_extim_site(self, sec): # i have genuinely no idea what the old code was supposed to do with the paramaters, so this will have none.
         self.stim1 = h.IClamp(sec(0.5))
         self.stim2 = h.IClamp(sec(0.5))
         self.stim1.__setattr__("del", 5) 
@@ -180,7 +181,7 @@ class Expcell_demo(ExpcellTemplate):
             try:
                 sec.gbar_nafTraub = 0.2
                 sec.gbar_kdrTraub = 0.005 #unsure about this one
-            except AttributeError:
+            except AttributeError: # thrown when kdrTraub and/or nafTraub are not in sec (if any sections had only kdrTraub, this would be an issue)
                 pass
         self.set_soma_leak(
                 -70, # (vs-expcell.hoc, line 17)// somatic voltage, options are typically -80, -70, -60
