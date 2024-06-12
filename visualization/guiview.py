@@ -57,7 +57,7 @@ class modBAS(BallAndStick):
             #seg.pas.g = 0.001
             #seg.pas.e = -65 * mV
 
-m = modBAS(1)
+m = modBAS(0)
 
 t = h.Vector().record(h._ref_t)
 
