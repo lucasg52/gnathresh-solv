@@ -92,7 +92,6 @@ def replot():
 
 setup_record()
 setup_stim(m.dend(1))
-from neuron import gui
 rerun()
 replot()
 #stdout = sys.stdout
