@@ -6,3 +6,7 @@ Lucas:
   	--Done.
   - Get correct parameters for model
     --Mostly done. All paramaters appear to lie in just a few files, along with the modfiles (see experimentation/paramnotes for more details)
+  - Create standard environment for interractive commandline simulation (centralized codebase, better IDLE interraction)
+
+Laura:
+  - get GUI visualization to work for simulations
