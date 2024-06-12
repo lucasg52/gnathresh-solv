@@ -120,8 +120,8 @@ class ExpcellTemplate:
         taper = self.taper
         taperpnt = int((taper / self.IS.L) * self.IS.nseg)
         taperarr = np.concatenate((
-                np.linspace(self.soma_diam, taper, taperpnt),
-                np.linspace(taper, self.main_diam, self.IS.nseg - taperpnt)
+                np.linspace(self.soma_diam, self.IS_diam, taperpnt),
+                np.linspace(self.IS_diam, self.main_diam, self.IS.nseg - taperpnt)
                 ))
         i = 0
         for seg in self.IS:
