@@ -12,11 +12,14 @@ def toarr_axis(
     fp = open(filename, 'r')
     axisvals = [set() for i in axis_wordnums]
     for line in fp:
-        lsep = line.split(wordsep)
-        i = 0
-        for wordnum in axis_wordnums:
-            axisvals[i].add(float(lsep[wordnum]))
-            i += 1
+        try:
+            lsep = line.split(wordsep)
+            i = 0
+            for wordnum in axis_wordnums:
+                axisvals[i].add(float(lsep[wordnum]))
+                i += 1
+        except Exception:
+            print("toarr_axis: skipped line:" + line)
 
     axisvals = [list(s) for s in axisvals]
     for s in axisvals:
