@@ -1,4 +1,4 @@
-from neuron import h
+from neuron import h,gui
 from neuron.units import ms, mV
 from neuron.units import μm as microm
 import matplotlib.pyplot as plt
