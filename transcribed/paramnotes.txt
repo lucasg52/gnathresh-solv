@@ -1,6 +1,6 @@
 Stim-site:
 	- Amplitude:
-		0.2
+		0.2 MICROamps
 	- Duration:
 		0.3125 ms (laura notes that this is equal to 5/16 ms)
 	- Delays:
