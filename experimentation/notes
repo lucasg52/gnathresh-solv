@@ -7,3 +7,4 @@ Play around more with programatic sim control:
   What is the point of h.finitialize? h.continuerun?
   How long does it take to run the simulation? (do some stress-testing)
   is it possible to save the state of a simulatiuon and continue it later? (as the name h.continuerun would suggest)
+  	a: yes, h.continuerun runs UNTIL the specified time

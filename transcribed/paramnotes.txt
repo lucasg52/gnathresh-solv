@@ -1,3 +1,5 @@
+Note: I will try to import old cell templates directly from hoc
+
 Stim-site:
 	- Amplitude:
 		0.2 MICROamps
@@ -36,7 +38,7 @@ Misc:
 		according to laura this is a parameter that exists in the gui but its not clear if neuron.h has an attribute equivalent 
 
 Needed:
-	- temperature:
+	- temperature: (h.celcius)
 		Default is NOT good (2 deg C)
 	- dx = 0.2 lambda (previous student papers)
 	- any other pas params I can get my hands on (already looked thru traub params thoroughly, standard hh not used)
