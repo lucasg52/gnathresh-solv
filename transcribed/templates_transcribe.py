@@ -25,6 +25,7 @@ class ExpcellTemplate:
             kinetics = 0
             ):
         self.dx = dx # i belive this is the only paramater that really matters (for now)
+        self.ratio = ratio
 
         self.soma = h.Section(          name = "soma")
         self.IS = h.Section(            name = "IS")
@@ -151,6 +152,8 @@ class ExpcellTemplate:
         self.soma.L = self.soma.diam = self.soma_diam
         self.IS.L = 40 # line 98 
         self.main_shaft.L = self.main_length * eq.elength(self.main_shaft, d = self.main_diam)
+        self.main_shaft.diam = self.main_diam
+        self.prop_site.diam = self.main_diam/self.ratio
         self.normalize_dx() # technically this is executed at the end
         self.taper_IS() # this was implimented entirely on my own discretion since the old code seemed to be letting neuron taper it using pt3dadd... and they also normalized dx afterwards, which seems like a bad idea since it would probably just rebin the segment diameters 
 
@@ -188,13 +191,10 @@ class Expcell_demo(ExpcellTemplate):
                 0.002 # (vs-expcell.hoc, line 34)
                 )
         self.set_extim_site(self.prop_site)
-
-
         
+        self.stim1.amp = 0
+        self.stim2.amp = 600
+        self.stim2.dur = 0.5
+        self.prop_site.connect(self.main_shaft(0.5)) 
 
-    
-    
-    
-    
-    
-           
+       
