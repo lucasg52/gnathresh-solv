@@ -1,9 +1,9 @@
-from neuron import h
-import adoptedeq as eq
-from adoptedeq import normalize_dlambda
-import kinetics_transcribe as kin
-from taperedsection import TaperedSection
-from math import ulp as __ulp__, sqrt as __sqrt__
+from  neuron import h
+import gnatsolv.   adoptedeq as eq
+from  gnatsolv. adoptedeq import normalize_dlambda
+import gnatsolv.   kinetics_transcribe as kin
+from  gnatsolv. taperedsection import TaperedSection
+from  gnatsolv. math import ulp as __ulp__, sqrt as __sqrt__
 #KISS:
 #Keep It Simple, Stupid.
 __NORMEPSILON__ = __ulp__(5)
@@ -87,10 +87,10 @@ class BaseExpCell:
         self.dx = dx # i belive this is the only paramater that really matters (for now)
         self.ratio = ratio
 
-        self.soma = h.Section(          name = "soma"       )#,cell = self )
-        self.IS = h.Section(            name = "IS"         )#,cell = self )
-        self.main_shaft = h.Section(    name = "main_shaft" )#,cell = self )
-        self.prop_site = h.Section(     name = "prop_site"  )#,cell = self )
+        self.soma = h.Section(          name = "soma"       ,cell = self )
+        self.IS = h.Section(            name = "IS"         ,cell = self )
+        self.main_shaft = h.Section(    name = "main_shaft" ,cell = self )
+        self.prop_site = h.Section(     name = "prop_site"  ,cell = self )
 
         self.main_length = 8 # // electronic length of main shaft
         for k, v in __layerdict__["layer" + str(layer)].items():
@@ -196,6 +196,7 @@ class APRecorder():
             ):
         self.rvec = h.Vector()
         self.nc = h.NetCon(sec(ran)._ref_v, None, sec = sec)
+        self.nc.record(self.rvec)
     def proptest(self):
         if len(self.rvec):
             return True
@@ -228,6 +229,16 @@ class ExpCell_notaper(BaseExpCell):
         super()._setup_morph()
         self.IS.diam = self.IS_diam
         self._normalize()
+    def getgnabar(self):
+        gna = self.main_shaft.gbar_nafTraub
+        for sec in self.all:
+            if sec is not self.soma:
+                assert(sec.gbar_nafTraub == gna)
+        return gna
+    def setgnabar(self, gna):
+        for sec in self.all:
+            if sec is not self.soma:
+                sec.gbar_nafTraub = gna
     def _setup_exp(self):
         set_exstim_site(self.prop_site)
         self.aprecord = APRecorder(self.main_shaft, ran = 1)
