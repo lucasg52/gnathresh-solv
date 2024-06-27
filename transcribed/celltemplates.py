@@ -34,7 +34,41 @@ __layerdict__ = {
         "ell_c" :     0.015
     }
 }
+def reset3d(m): # doesnt even work
+    for sec in m.all:
+        if sec.n3d() < 0.5:
+            print("3d info does not need to be reset, loop break at section:" + str(sec))
+            return
+        if sec.pt3dclear() < 0.5:
+            print("failed to clear section 3d info because plotshape is open")
 
+def autof3d(cell, ratio = 4, min = 50):
+    sec = cell.main_shaft
+    f = 0
+    children = sec.children()
+    if children:
+        for sec in children:
+            f += max(sec.diam * ratio, min)
+            f3d(sec, f = f)
+def autof3d0(tree, ratio = 4):
+    f = 0
+    for sec in tree:
+        children = sec.children()
+        if children:
+            for sec in children:
+                f += sec.diam * ratio
+                f3d(sec, f = f)
+
+def f3d(sec, f = 0):
+    #if h.pt3dclear(sec = sec) > 0.5:
+    #    print("ShapePlot must be closed to fuck 3d.")
+    #else:
+    if sec.n3d() < 1:
+        print("how can one fuck 3d if there is no 3d?")
+        return
+    if f == 0:
+        f = sec.L
+    h.pt3dstyle(1, 0,f, 0, sec = sec)
 def set_exstim_site(sec):
         stim = h.IClamp(sec(0.5))
         stim.delay = 5
@@ -65,16 +99,18 @@ class BaseExpCell:
         self.soma_diam = self.s_ratio*self.IS_diam
 
     def _setup_morph(self):
-        self.IS.connect(self.soma(1))
-        self.main_shaft.connect(self.IS(1)) # (line 107)
-        self.prop_site.connect(self.main_shaft(0)) # connections must be made first for self.all to be correct
-        self.all = self.soma.wholetree()
-        #the following definitions for section diameter are taken from lines 89-105. 
         self.soma.L = self.soma.diam = self.soma_diam
         self.IS.L = 40 # line 98 
         self.main_shaft.L = self.main_length * eq.elength(self.main_shaft, d = self.main_diam)
         self.main_shaft.diam = self.main_diam
         self.prop_site.diam = self.main_diam/self.ratio
+        self.IS.connect(self.soma(1))
+        self.main_shaft.connect(self.IS(1)) # (line 107)
+        self.prop_site.connect(self.main_shaft(0)) # connections must be made first for self.all to be correct
+
+        self.all = self.soma.wholetree()
+        #the following definitions for section diameter are taken from lines 89-105. 
+
         self._normalize() # technically this is executed at the end
     def _normalize(self): # line 166, not clear why some sections get normalized differently. so I am just assuming it is homogenous. also made my own subroutine 
         for sec in self.all:
