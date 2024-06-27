@@ -3,7 +3,7 @@ import gnatsolv.   adoptedeq as eq
 from  gnatsolv. adoptedeq import normalize_dlambda
 import gnatsolv.   kinetics_transcribe as kin
 from  gnatsolv. taperedsection import TaperedSection
-from  gnatsolv. math import ulp as __ulp__, sqrt as __sqrt__
+from  math import ulp as __ulp__, sqrt as __sqrt__
 #KISS:
 #Keep It Simple, Stupid.
 __NORMEPSILON__ = __ulp__(5)
