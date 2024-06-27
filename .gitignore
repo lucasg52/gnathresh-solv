@@ -1,7 +1,10 @@
 # ignore compiled x86_64 dir (from modfiles)
 x86_64
 # if modfiles compile with a different name for anyone, please let me know before you push megabytes of bytecode onto the main branch
-
+nrnmech.dll
+#this is what it appears as on lauras machine
+*.o
+*.c
 # ignore __pycache__ files, generated from running IDLE
 __pycache__
 
