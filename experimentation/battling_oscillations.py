@@ -60,6 +60,32 @@ def run():
 
 #spikes
 def spikes(want):
+      nc_prop = h.NetCon(m.prop_site(0)._ref_v, None, sec=m.prop_site)
+      st_prop = h.Vector()
+      nc_prop.record(st_prop)
+
+      nc_prop2 = h.NetCon(m.prop_site(0.0625)._ref_v, None, sec=m.prop_site)
+      st_prop2 = h.Vector()
+      nc_prop2.record(st_prop2)
+
+      nc_main = h.NetCon(m.main_shaft(1)._ref_v, None, sec=m.main_shaft)
+      st_main = h.Vector()
+      nc_main.record(st_main)
+
+      nc_IS = h.NetCon(m.IS(0.5)._ref_v, None, sec=m.IS)
+      st_IS = h.Vector()
+      nc_IS.record(st_IS)
+
+      nc_IS2 = h.NetCon(m.IS(1)._ref_v, None, sec=m.IS)
+      st_IS2 = h.Vector()
+      nc_IS2.record(st_IS2)
+
+      nc_soma = h.NetCon(m.soma(0)._ref_v, None, sec=m.soma)
+      st_soma = h.Vector()
+      nc_soma.record(st_soma)
+
+      h.finitialize(-65)
+      h.continuerun(20)
   if want==1:
     print(f"number of spikes at prop 0: {len(list(st_prop))}")
     print(f"number of spikes at porp 0.0625: {len(list(st_prop2))}")
