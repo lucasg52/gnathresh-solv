@@ -54,6 +54,9 @@ print("If you want to run, say run().",
       "If you want the plot of voltage against time, say plot().", 
       "If you want info about spikes, say spikes(want). For number of spikes, want=1; for time of spikes, want =2; and for both, want=3.")
 #running the simulations
+h.finitialize(-65)
+h.continuerun(20)
+
 def run():
   h.finitialize(-65)
   h.continuerun(20)
