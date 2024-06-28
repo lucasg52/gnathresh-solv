@@ -9,10 +9,10 @@ traubdict = {
             "Ra" :   100.0,
             #insert nafTraub
             "ena" : 50,
-            "gbar_nafTraub" : 0.2,
+            "gbar_nafTraub" : 0.45,
             #insert kdrTraub
             "ek" : -95,
-            "gbar_kdrTraub" :  0.2
+            "gbar_kdrTraub" :  0.45
     },
     "soma" : {
             "g_pas" : 1/50000,
