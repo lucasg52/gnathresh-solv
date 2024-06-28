@@ -50,19 +50,19 @@ h.finitialize(-65)
 h.continuerun(20)
 
 #spikes
-print(f"number of spikes: {count(list(st_prop))")
+print(f"number of spikes: {count(list(st_prop))}")
 print(f"spike times prop 0: {list(st_prop)}")
 
-print(f"number of spikes: {count(list(st_prop2))")
+print(f"number of spikes: {count(list(st_prop2))}")
 print(f"spike times prop 0.0625: {list(st_prop2)}")
 
-print(f"number of spikes: {count(list(st_main))")
+print(f"number of spikes: {count(list(st_main))}")
 print(f"spike times main 1: {list(st_main)}")
 
-print(f"number of spikes: {count(list(st_IS))")
+print(f"number of spikes: {count(list(st_IS))}")
 print(f"spike times IS 0.5: {list(st_IS)}")
 
-print(f"number of spikes: {count(list(st_soma))")
+print(f"number of spikes: {count(list(st_soma))}")
 print(f"spike times soma 0: {list(st_soma)}")
 
 #plotting
