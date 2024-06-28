@@ -1,8 +1,8 @@
 from  neuron import h
-import gnatsolv.   adoptedeq as eq
-from  gnatsolv. adoptedeq import normalize_dlambda
-import gnatsolv.   kinetics_transcribe as kin
-from  gnatsolv. taperedsection import TaperedSection
+from . import adoptedeq as eq
+from .adoptedeq import normalize_dlambda
+from . import kinetics as kin
+from .taperedsection import TaperedSection
 from  math import ulp as __ulp__, sqrt as __sqrt__
 #KISS:
 #Keep It Simple, Stupid.

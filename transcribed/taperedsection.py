@@ -1,7 +1,7 @@
 
 from neuron import h
 import numpy as np
-from adoptedeq import normalize_dlambda
+from .adoptedeq import normalize_dlambda
 
 class TaperedSection():
     def __init__(
