@@ -58,7 +58,7 @@ print(f"spike times soma 0: {list(st_soma)}")
 
 #plotting
 plt.plot(t,prop_v0,label="prop 0")
-plt.plot(t, prop_00625, label = "prop 0.0625")
+plt.plot(t, prop_v00625, label = "prop 0.0625")
 plt.plot(t,main_v1,label="main 1")
 plt.plot(t,IS_v05,label="IS 0.5")
 plt.plot(t,soma_v0,label="soma 0")
