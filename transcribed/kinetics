@@ -31,6 +31,10 @@ traubdict_mod = (traubdict.copy()).update({
         "dendrite" : {
             "g_pas" : 1/50000,
             "Ra" : 250
+        },
+        "axon" : {
+            "gbar_nafTraub" :   0.2,
+            "gbar_kdrTraub" :   0.2
         }
 })
 
@@ -86,12 +90,13 @@ def insmod_Traub(sec, forsec): # declares tstpo=20 at the end.
         sec.insert("kdrTraub")
         sec.insert("nafTraub")
     attrdict = forsecdict[forsec]
-    if sec.name == "IS":
+
+    for k in attrdict:
+        setattr(sec, k, attrdict[k])
+    if sec.name == "IS": #this is to only set the first 40 micrometers of IS to the following gbars
         sec.gbar_nafTraub =   0.45
         sec.gbar_kdrTraub =   0.45
         # you dont need IS child.
-    for k in attrdict:
-        setattr(sec, k, attrdict[k])
 
             
 
