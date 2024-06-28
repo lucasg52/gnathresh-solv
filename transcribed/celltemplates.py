@@ -194,17 +194,15 @@ class APRecorder():
             sec,
             ran = 0.5
             ):
-        self.rvec = h.Vector()
+        self.recorded = False
         self.nc = h.NetCon(sec(ran)._ref_v, None, sec = sec)
-        self.nc.record(self.rvec)
+        self.nc.record(self._record())
+    def _record(self):
+        print(str(self) + "recorded an AP")
+        self.recorded = True
     def proptest(self):
-        if len(self.rvec):
-            return True
-        else:
-            return False
-    def proptest_auto(self):
-        ret = self.proptest()
-        self.rvec = h.Vector()
+        ret = self.recorded
+        self.recorded = False
         return ret
 class ExpCell_notaper(BaseExpCell):
     def __init__(

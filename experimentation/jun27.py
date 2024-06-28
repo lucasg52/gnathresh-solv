@@ -10,9 +10,12 @@ mystim.delay = 3
 mystim.amp = 200
 mystim.dur = 5/16
 def proptest(gnabar):
+    print(f"running ah test, gbar_na = {m.getgnabar()}")
     m.setgnabar(gnabar)
     h.finitialize()
     h.continuerun(10)
-    return (aprec.proptest_auto())
+    ret = aprec.proptest()
+    print(ret)
+    return (ret)
 search = searchclasses.ExpandingSearch(0.05, 0.5, proptest, 0, 5)
 
