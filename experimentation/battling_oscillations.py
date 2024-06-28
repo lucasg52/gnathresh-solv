@@ -50,15 +50,17 @@ nc_soma = h.NetCon(m.soma(0)._ref_v, None, sec=m.soma)
 st_soma = h.Vector()
 nc_soma.record(st_soma)
 
-
+print("If you want to run, say run(). 
+      If you want the plot of voltage against time, say plot(). 
+      If you want info about spikes, say spikes(want). For number of spikes, want=1; for time of spikes, want =2; and for both, want=3.")
 #running the simulations
 def run():
   h.finitialize(-65)
   h.continuerun(20)
 
 #spikes
-def spikes(number, place):
-  if number=='yes':
+def spikes(want):
+  if want==1:
     print(f"number of spikes at prop 0: {len(list(st_prop))}")
     print(f"number of spikes at porp 0.0625: {len(list(st_prop2))}")
     print(f"number of spikes at main 1: {len(list(st_main))}")
@@ -66,15 +68,28 @@ def spikes(number, place):
     print(f"number of spikes at IS 1: {len(list(st_IS2))}")
     print(f"number of spikes at soma 0: {len(list(st_soma))}")
     
-  if place=='yes':
+  if want== 2:
     print(f"spike times prop 0: {list(st_prop)}")
     print(f"spike times prop 0.0625: {list(st_prop2)}")
     print(f"spike times main 1: {list(st_main)}")  
     print(f"spike times IS 0.5: {list(st_IS)}")  
     print(f"spike times IS 1: {list(st_IS2)}")
     print(f"spike times soma 0: {list(st_soma)}")
+  if want==3:
+    print(f"number of spikes at prop 0: {len(list(st_prop))}")
+    print(f"spike times prop 0: {list(st_prop)}")
+    print(f"number of spikes at porp 0.0625: {len(list(st_prop2))}")
+    print(f"spike times prop 0.0625: {list(st_prop2)}")
+    print(f"number of spikes at main 1: {len(list(st_main))}")
+    print(f"spike times main 1: {list(st_main)}") 
+    print(f"number of spikes at IS 0.5: {len(list(st_IS))}")
+    print(f"spike times IS 0.5: {list(st_IS)}") 
+    print(f"number of spikes at IS 1: {len(list(st_IS2))}")
+    print(f"spike times IS 1: {list(st_IS2)}")
+    print(f"number of spikes at soma 0: {len(list(st_soma))}")
+    print(f"spike times soma 0: {list(st_soma)}")
   else:
-    print("number or place?")
+    print("1 for number of spikes, 2 for time of spikes, 3 for both")
 
 #plotting
 def plot():
