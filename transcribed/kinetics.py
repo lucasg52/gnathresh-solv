@@ -23,7 +23,8 @@ traubdict = {
             "Ra" : 250
     }
 }
-traubdict_mod = (traubdict.copy()).update({
+traubdict_mod = traubdict.copy()
+traubdict_mod.update({
         "soma" : {
             "g_pas" : 2e-3, # // higher conductance makes up for currents not being modeled
             "Ra" : 250
