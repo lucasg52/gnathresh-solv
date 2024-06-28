@@ -46,7 +46,7 @@ nc_soma.record(st_soma)
 
 
 #running the simulations
-h.finialize(-65)
+h.finitialize(-65)
 h.continuerun(20)
 
 #spikes
