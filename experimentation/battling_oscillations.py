@@ -38,10 +38,6 @@ nc_main = h.NetCon(m.main_shaft(1)._ref_v, None, sec=m.main_shaft)
 st_main = h.Vector()
 nc_main.record(st_main)
 
-nc_main2 = h.NetCon(m.main_shaft(0)._ref_v, None, sec=m.main_shaft)
-st_main2 = h.Vector()
-nc_main2.record(st_main2)
-
 nc_IS = h.NetCon(m.IS(0.5)._ref_v, None, sec=m.IS)
 st_IS = h.Vector()
 nc_IS.record(st_IS)
@@ -69,9 +65,6 @@ print(f"number of spikes at porp 0.0625: {len(list(st_prop2))}")
 print(f"number of spikes at main 1: {len(list(st_main))}")
 #print(f"spike times main 1: {list(st_main)}")
 
-print(f"number of spikes at main 0: {len(list(st_main2))}")
-#print(f"spike times main 0: {list(st_main2)}")
-
 print(f"number of spikes at IS 0.5: {len(list(st_IS))}")
 #print(f"spike times IS 0.5: {list(st_IS)}")
 
@@ -85,7 +78,6 @@ print(f"number of spikes at soma 0: {len(list(st_soma))}")
 plt.plot(t,prop_v0,label="prop 0", linestyle='dashed')
 plt.plot(t, prop_v00625, label = "prop 0.0625", linestyle='dashed')
 plt.plot(t,main_v1,label="main 1", linestyle='dashed')
-plt.plot(t,main_v0,label="main 0")
 plt.plot(t,IS_v1,label="IS 1", linestyle='dashed')
 plt.plot(t,soma_v0,label="soma 0",linestyle='dashed')
 plt.legend()
