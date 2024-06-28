@@ -61,7 +61,7 @@ jonasdict = {
 }
 
 def ins_Traub(sec, forsec):
-    forsecdict = traubdict_mod 
+    forsecdict = traubdict 
     assert(forsec in forsecdict)
 
     
@@ -82,7 +82,7 @@ def inswho_Traub():
     print("uninsert_Traub: not implemented")
 
 def insmod_Traub(sec, forsec): # declares tstpo=20 at the end.
-    forsecdict = traubdict 
+    forsecdict = traubdict_mod
     assert(forsec in forsecdict)
     
     sec.insert("pas")
