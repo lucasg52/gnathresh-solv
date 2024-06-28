@@ -3,7 +3,7 @@ from neuron.units import ms, mV
 from neuron.units import μm as microm
 import matplotlib.pyplot as plt
 #import sys
-from tutorialclasses import BallAndStick
+from gnatsolv.experimentation.tutorialclasses import BallAndStick
 h.load_file('stdrun.hoc')
 class BAS:
     def __init__ (self, gid):

@@ -2,7 +2,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-import readsummary as rs
+from . import readsummary as rs
 
 from matplotlib import cm
 #def makeplot(cmap = cm.viridis):
