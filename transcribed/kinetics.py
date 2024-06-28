@@ -61,7 +61,7 @@ jonasdict = {
 }
 
 def ins_Traub(sec, forsec):
-    forsecdict = traubdict 
+    forsecdict = traubdict_mod 
     assert(forsec in forsecdict)
 
     
