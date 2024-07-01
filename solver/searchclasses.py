@@ -15,7 +15,7 @@ class StrictInt(int):
     def __sub__(self,other):
         return StrictInt(super().__sub__(other))
 
-class GNASearch():
+class GNASearch(): # should change name to BinSearch ?
 
     def __init__(
                  self,
@@ -75,6 +75,7 @@ class ExpandingSearch(GNASearch):
             self.hi -= d 
             self.a = (self.lo + self.hi) / 2
         else:
+            self.searchstep = super().searchstep
             super().searchstep()
 
 
