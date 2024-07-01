@@ -17,7 +17,7 @@ def proptest(gnabar):
     #print(f"running ah test, gbar_na = {m.getgnabar()}")
     h.finitialize(-68.5)
     h.continuerun(10)
-    ret = aprec.proptest()
+    ret = aprec.proptest() #NOT recursive, this is the call for the APRecorder to return the success/fail of the last test, and reset
     print(ret)
     return (ret)
 search = searchclasses.GNASearch(0, 0.05, proptest)
