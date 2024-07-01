@@ -41,4 +41,5 @@ Needed:
 	- temperature: (h.celcius)
 		Default is NOT good (2 deg C)
 	- dx = 0.2 lambda (previous student papers)
-	- any other pas params I can get my hands on (already looked thru traub params thoroughly, standard hh not used)
+	- membrane potential sensitivity for spike recorder 
+	- IS gbar for na and k, does gbar_k vary?

@@ -1,0 +1,22 @@
+from matplotlib import pyplot as plt
+def searchreset():
+    search = searchclasses.GNASearch(0, 1, proptest)
+
+def fullsolve(steps = 12):
+    searchreset()
+    for i in range(steps):
+            search.searchstep()
+    return search.a
+
+
+results = []
+for seg in m.main_shaft:
+    plate = [seg.x]
+    m.prop_site.connect(seg)
+    plate.append(fullsolve(steps = 10))
+    results.append(tuple(plate))
+
+xpnts = [x for x,y in results]
+ypnts = [y for x,y in results]
+plt.plot(xpnts,ypnts)
+

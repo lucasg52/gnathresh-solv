@@ -3,7 +3,7 @@ from . import adoptedeq as eq
 from .adoptedeq import normalize_dlambda
 from . import kinetics as kin
 from .taperedsection import TaperedSection
-from  math import ulp as __ulp__, sqrt as __sqrt__
+from  math import ulp as __ulp__
 #KISS:
 #Keep It Simple, Stupid.
 __NORMEPSILON__ = __ulp__(5)
@@ -136,46 +136,12 @@ class ExpCell_3dtaper(BaseExpCell):
         self._setup_morph()
     def _taperIS(self):
         self.IS.diam = self.main_diam # Confusing. This is done so that the ending diameter of the new IS TaperedSection will be consistent with main axon.
-        IS_diam =   self.IS_diam
-        s_ratio =   self.s_ratio
-        ell_c =     self.ell_c  
-        self.soma_diam = s_ratio*IS_diam
-        
-        # this entire section below I am considering tossing it in adoptedeq.py
-        alpha=                          \
-                ((
-                    (__sqrt__(s_ratio)-1)
-                    /
-                    (s_ratio-1)
-                )**4)                   \
-                /                       \
-                (
-                    25**4
-                    *
-                    100 *
-                    IS_diam**2
-                )
-
-        gamma=                          \
-                IS_diam**2              \
-                *                       \
-                (s_ratio-1)**2          \
-                /4
-
-        taper =                         \
-                __sqrt__(
-                    -gamma/2 +
-                    __sqrt__(
-                        alpha**2
-                        *
-                        gamma**2
-                        +
-                        4 * alpha * ell_c**4
-                        )
-                    /
-                    (2*alpha)
-                )
-        taperpnts = [(taper, IS_diam)]
+        alpha, gamma, taper = eq.alphagammataper(
+            IS_diam =   self.IS_diam,
+            s_ratio =   self.s_ratio,
+            ell_c =     self.ell_c
+            )
+        taperpnts = [(taper, self.IS_diam)]
         IS = TaperedSection("IS", self, taperpnts, self.IS)
         self.IS = IS
     def _setup_morph(self):
@@ -196,7 +162,7 @@ class APRecorder():
             ):
         self.recorded = False
         self.nc = h.NetCon(sec(ran)._ref_v, None, sec = sec)
-        self.nc.record(self._record())
+        self.nc.record(self._record)
     def _record(self):
         print(str(self) + "recorded an AP")
         self.recorded = True
@@ -220,7 +186,6 @@ class ExpCell_notaper(BaseExpCell):
         #self.IS_1 = h.Section(name = "IS[1]", cell = self)
         self._setup_bioph()
         self._setup_morph()
-        self._setup_exp()
     def __repr__(self):
         return("ExpCell_notaper[{}]".format(self.gid) )
     def _setup_morph(self):
@@ -237,8 +202,12 @@ class ExpCell_notaper(BaseExpCell):
         for sec in self.all:
             if sec is not self.soma:
                 sec.gbar_nafTraub = gna
+    def setgkbar(self, gk):
+        for sec in self.all:
+            if sec is not self.soma:
+                sec.gbar_kdrTraub = gk
     def _setup_exp(self):
-        set_exstim_site(self.prop_site)
+        #set_exstim_site(self.prop_site)
         self.aprecord = APRecorder(self.main_shaft, ran = 1)
     def _setup_bioph(self):
         kin.insmod_Traub(self.soma,         "soma")
