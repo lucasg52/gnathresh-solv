@@ -15,7 +15,7 @@ class StrictInt(int):
     def __sub__(self,other):
         return StrictInt(super().__sub__(other))
 
-class GNASearch(): # should change name to BinSearch ?
+class BinSearch(): # should change name to BinSearch ?
 
     def __init__(
                  self,
@@ -32,7 +32,7 @@ class GNASearch(): # should change name to BinSearch ?
         if math.isnan(a):
             self.a = (lo + hi) / 2
 
-    def searchstep (self):
+    def searchstep (self): # pass approximation (a) to 
         if self.propatest(self.a):
             self.hi = self.a
         else:
@@ -49,7 +49,7 @@ class GNASearch(): # should change name to BinSearch ?
         return self.a
 
 
-class ExpandingSearch(GNASearch):
+class ExpandingSearch(BinSearch):
     # This class will be useful when bounds for the solution may be provided that are not consistent (there may be a chance that the provided bounds do not contain the solution)
     # the search will thus expand the bounds accordingly before switching to a binary search again.
     def __init__(
@@ -79,4 +79,4 @@ class ExpandingSearch(GNASearch):
             super().searchstep()
 
 
-
+GNASearch = BinSearch # for legacy code (BinSearch was formally GNASearch)
