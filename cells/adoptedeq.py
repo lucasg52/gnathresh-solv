@@ -25,37 +25,26 @@ def alphagammataper(
         
     alpha=                          \
             ((
-                (__sqrt__(s_ratio)-1)
-                /
-                (s_ratio-1)
-            )**4)                   \
-            /                       \
-            (
-                25**4
-                *
-                100 *
-                IS_diam**2
-            )
+                    (__sqrt__(s_ratio)-1)
+                    / (s_ratio-1))
+                ** 4)               \
+            / (25**4
+                * 100 * IS_diam**2)
 
     gamma=                          \
             IS_diam**2              \
-            *                       \
-            (s_ratio-1)**2          \
-            /4
+            * (s_ratio-1)**2        \
+            / 4
 
     taper =                         \
             __sqrt__(
-                -gamma/2 
-                +
-                __sqrt__(
-                    alpha**2
-                    *
-                    gamma**2
-                    +
-                    4 * alpha * ell_c**4
+                - gamma/2 
+                + __sqrt__(
+                    alpha**2 
+                    * gamma**2
+                    + 4 * alpha * ell_c**4
                     )
-                /
-                (2*alpha)
+                / (2*alpha)
             )
     return alpha, gamma, taper
 
@@ -75,7 +64,6 @@ def gr(d_parent, *args): # calculate geometric ratio w/ parent branch diameter f
             ) / pow(d_parent, 1.5)
 
 def normalize_dlambda(sec, dx = 1): 
-    print(f"dx = {dx}")
     sec.nseg =  \
         int(
             sec.L/

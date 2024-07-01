@@ -1,8 +1,11 @@
-
 from neuron import h
 import numpy as np
 from .adoptedeq import normalize_dlambda
-
+from  math import ulp as __ulp__
+"""I don't expect anyone to read this file yet. Please tell me if you read this"""
+#KISS:
+#Keep It Simple, Stupid.
+__NORMEPSILON__ = __ulp__(5)
 class TaperedSection():
     def __init__(
             self,
@@ -12,7 +15,6 @@ class TaperedSection():
             originsec = None,
             directionvec = np.array((1,0,0))
             ):
-        global __NORMEPSILON__
         class ModTuple(tuple):
             def __gt__(self, other):
                 return self[0] > other[0]
