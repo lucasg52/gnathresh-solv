@@ -5,7 +5,12 @@ Lucas:
   - Visualization for old data from Beloit 2018
   	--Done.
   - Get correct parameters for model
-    --Mostly done. All paramaters appear to lie in just a few files, along with the modfiles (see experimentation/paramnotes for more details)
-    --Better yet: get old model directly imported into environment from old code
+    --Done. We will not be using all of them anyways.
   - Create standard environment for interractive commandline simulation (centralized codebase, better IDLE interraction)
+    - Good commenting and stuff
+      - Partially done
+    - centralized codebase
+      - Partially done by making a package
+  - Eliminate transcribed dir
+    - Partially done, just have to decide what do do with the body.
 
