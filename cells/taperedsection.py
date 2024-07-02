@@ -7,6 +7,7 @@ from  math import ulp as __ulp__
 #Keep It Simple, Stupid.
 __NORMEPSILON__ = __ulp__(5)
 class TaperedSection():
+    """Create a tapered section in the same position as originsec, which tapers to diameters at distances specified in taperpnts"""
     def __init__(
             self,
             name,
@@ -115,6 +116,7 @@ class TaperedSection():
         self.seclist.__index__(*args)
 
 class TaperedSection_compress(TaperedSection):
+    """create a tapered section and display explicit statments to build the equivalent section"""
     def __init__(
             self,
             name,

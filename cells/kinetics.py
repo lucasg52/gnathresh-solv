@@ -1,8 +1,9 @@
 # Lucas Swanson -- Ripon College '27
-# transcribed from Beloit_axon_propagation/kinetics_wholecell.hoc
-# original comments start with HOC's double-shash
+"""transcribed from Beloit_axon_propagation/kinetics_wholecell.hoc
+Biophysical parameters in the form of key-value pairs are matched to different types of segment using standard python dictionarys.
+see traubdict, traubdict_mod, jonasdict for more detail"""
+#   original comments start with HOC's double-shash
 
-from neuron import h
 traubdict = {
     "axon" : {
             "g_pas" : 1/1000,
@@ -82,7 +83,7 @@ def unins_Traub():
 def inswho_Traub():
     print("uninsert_Traub: not implemented")
 
-def insmod_Traub(sec, forsec): # declares tstpo=20 at the end.
+def insmod_Traub(sec, forsec): # legacy code declares tstpo=20 at the end.
     forsecdict = traubdict_mod
     assert(forsec in forsecdict)
     
