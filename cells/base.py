@@ -30,12 +30,20 @@ layerdict = {
     }
 }
 def set_exstim_site(sec):
-        stim = h.IClamp(sec(0.5))
-        stim.delay = 5
-        stim.amp =  0.2
-        stim.dur =  0.3125
+    """(Legacy) taken from vs-expcell"""
+    stim = h.IClamp(sec(0.5))
+    stim.delay = 5
+    stim.amp =  0.2
+    stim.dur =  0.3125
 
 class BaseExpCell(ABC):
+    """Abstract base class for experimental cells
+        dx          maximum segment length in terms of lambda
+        ratio       (legacy) ratio between side branch and parent branch diams
+        gid = 0     gid, required for (useful) hoc/gui interraction
+        layer = 0   (legacy) specifies main, IS, and soma diams, as well as ell_c, which is alledgedly the elctrotonic length of the main axon (?)
+            see base.layerdict for more details
+    """
     def __init__(
             self,
             dx,
@@ -61,6 +69,7 @@ class BaseExpCell(ABC):
         self._setup_morph()
 
     def _setup_morph(self):
+        """setup morphology by initializing diameters, then connecting the segments (see _connect), then normalizing dx"""
         self.soma.L = self.soma.diam = self.soma_diam
         self.IS.L = 40 # line 98 
         self.main_shaft.L = self.main_length * eq.elength(self.main_shaft, d = self.main_diam)
@@ -82,9 +91,11 @@ class BaseExpCell(ABC):
 
     @abstractmethod
     def _setup_bioph(self):
+        """abstract method for initializing biophysical properties. Does nothing"""
         pass
 
     def _normalize(self): # line 166, not clear why some sections get normalized differently. so I am just assuming it is homogenous. also made my own subroutine 
+        """calls normalize_dlambda for all sections"""
         for sec in self.all:
             normalize_dlambda(sec, self.dx)
 

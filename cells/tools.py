@@ -2,6 +2,7 @@ from neuron import h
 
 # If you want something added to this file, please implement it in a different file or different branch first
 class APRecorder():
+    """Record ap spikes at sec(ran)"""
     def __init__ (
             self,
             sec,
@@ -11,9 +12,11 @@ class APRecorder():
         self.nc = h.NetCon(sec(ran)._ref_v, None, sec = sec)
         self.nc.record(self._record)
     def _record(self):
+        """called by hoc during simulation when an AP is recorded"""
         #print(str(self) + "recorded an AP")
         self.recorded = True
     def proptest(self):
+        """read self.recorded and reset it to False"""
         ret = self.recorded
         self.recorded = False
         return ret

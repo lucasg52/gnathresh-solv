@@ -3,6 +3,7 @@ from . import adoptedeq as eq
 from . import kinetics as kin
 from .taperedsection import TaperedSection
 from .tools import APRecorder
+"""this file specifies two cell types with differing AIS: the 3dtaper (which uses TaperedSec to get a precise representation, and a cell with an IS that is just a uniform cylinder"""
 class ExpCell_3dtaper(BaseExpCell):
     def __init__(
             self,
