@@ -1,4 +1,4 @@
-from gnatsolv.transcribed.celltemplates import *
+from gnatsolv.cells.tapertypes import *
 import matplotlib.pyplot as plt
 h.load_file("stdrun.hoc")
 
