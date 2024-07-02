@@ -1,5 +1,6 @@
 from gnatsolv.cells.tapertypes import *
 import matplotlib.pyplot as plt
+from neuron import h
 h.load_file("stdrun.hoc")
 
 #making the cell
