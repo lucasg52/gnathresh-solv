@@ -4,20 +4,7 @@ this file contains all equations that come from cited sources, old code, etc...
 It just contains equations, okay?
 """
 from math import  sqrt as __sqrt__
-#
-#def alpha(**kwargs):
-#    return(((
-#                    (sqrt(kwargs['s_ratio'])-1)
-#                    /
-#                    (kwargs['s_ratio']-1)
-#                )**4)                   \
-#                /                       \
-#                (
-#                    25**4
-#                    *
-#                    100 *
-#                    kwargs['IS_diam']**2
-#            ))
+
 def alphagammataper(
         IS_diam,
         s_ratio,
