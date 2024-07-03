@@ -62,7 +62,7 @@ def gr(d_parent, *args):
                 )
             ) / pow(d_parent, 1.5)
 
-def normalize_dlambda(sec, dx = 1): 
+def normalize_dlambda(sec, dx): 
     """normalize the nseg of section sec such that segments are no more than dx*lambda, where lambda is the electronic length unit""" 
     sec.nseg =  \
         int(
