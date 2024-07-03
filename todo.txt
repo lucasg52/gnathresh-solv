@@ -11,6 +11,7 @@ Lucas:
       - Partially done
     - centralized codebase
       - Partially done by making a package
+    - Inhereted dir for cell subclasses
   - Eliminate transcribed dir
     - Partially done, just have to decide what do do with the body.
 
