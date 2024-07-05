@@ -14,11 +14,12 @@ def run():
 	h.finitialize(-69)
 	h.continuerun(100)
 
-def Imped(place):
+def imped(place):
 	zz = h.Impedance()
-	zz.loc(place)
+	zz.loc(part)
 	zz.compute(0)
-	return zz.input(place)
+	return zz.input(part)
+	
 def graph(x, title, xlabel, ylabel):
 	plt.plot(x)
 	plt.title(title)
@@ -27,9 +28,9 @@ def graph(x, title, xlabel, ylabel):
 	plt.grid()
 	plt.show()
 
-def find_imp(Imp_list,place):
+def find_imp(imp_list,part):
 	run()
-	for sec in place:
-		#print(Imped(sec))
-		Imp_list.append(Imped(sec))
-	return f"Impedances found for {place}"
+	for seg in part:
+		#print(imped(seg))
+		Imp_list.append(imped(seg))
+	return f"Impedances found for {part}"
