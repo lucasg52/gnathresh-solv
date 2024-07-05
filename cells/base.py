@@ -33,8 +33,9 @@ def set_exstim_site(sec):
     """(Legacy) taken from vs-expcell"""
     stim = h.IClamp(sec(0.5))
     stim.delay = 5
-    stim.amp =  0.2
+    stim.amp =  200
     stim.dur =  0.3125
+    return stim
 
 class BaseExpCell(ABC):
     """Abstract base class for experimental cells
