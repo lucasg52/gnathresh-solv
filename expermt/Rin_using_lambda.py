@@ -23,7 +23,7 @@ class branch():
 
 	def _setup_bioph(self):
 		for sec in self.all:
-			sec.insert("pas")
+			sec.insert("pas")	# using default pas parameters (?)
 
 	def __repr__(self):
 		return f"Branch[{self.gid}]"
