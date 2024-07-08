@@ -15,3 +15,6 @@ __pycache__
 *.pdf
 *.pptx
 *.fig
+
+.idea
+# some bs that pycharm creates
