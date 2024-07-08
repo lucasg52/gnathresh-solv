@@ -68,6 +68,7 @@ class BaseExpCell(ABC):
         self.soma_diam = self.s_ratio*self.IS_diam
         self._setup_bioph()
         self._setup_morph()
+        self._connect()
 
     def _setup_morph(self):
         """setup morphology by initializing diameters, then connecting the segments (see _connect), then normalizing dx"""
@@ -77,7 +78,7 @@ class BaseExpCell(ABC):
         self.main_shaft.diam = self.main_diam
         # self.prop_site.diam = self.main_diam/self.ratio
         self.prop_site.diam = self.main_diam
-        self._connect()     # connections must be made first for self.all to be correct
+     # connections must be made first for self.all to be correct
         
         self.all = self.soma.wholetree()
         #the following definitions for section diameter are taken from lines 89-105. 
