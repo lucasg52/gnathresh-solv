@@ -21,7 +21,7 @@ class Resist_cell(BaseExpCell):
 		super().__init__(0.2,3,gid)
 	def _connect(self):
 		super()._connect()
-		self.parent.connect(self.main_shaft(0.5))
+		self.parent.connect(self.main_shaft(0.012))
 		self.side1.connect(self.parent(1))
 		self.side2.connect(self.parent(1))
 
@@ -64,8 +64,7 @@ print("input resistances collected")
 
 
 plt.plot(ir_list_prox_par, label="prox parent")
-plt.plot(ir_list_dist_par, label="dist parent")
-plt.plot(ir_list_dist_side, label="dist side")
+plt.plot(ir_list_dist_par, label="dist parent")# plt.plot(ir_list_dist_side, label="dist side")
 plt.xlabel("length of side branches")
 plt.ylabel("input resistance")
 plt.title("input resistance with varying side branch lengths")
