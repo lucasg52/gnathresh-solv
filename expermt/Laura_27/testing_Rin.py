@@ -1,10 +1,11 @@
-from gnatsolv.cells.base import BaseExpCell
+from cells.base import BaseExpCell
 from neuron import h
 from matplotlib import pyplot as plt
-from gnatsolv.cells import kinetics
+from cells import kinetics
+h.load_file("stdrun.hoc")
 
 
-class resist_cell(BaseExpCell):
+class Resist_cell(BaseExpCell):
 	def __init__(self, gid):
 		self.gid = gid
 
@@ -13,14 +14,14 @@ class resist_cell(BaseExpCell):
 		self.side2 = h.Section("side2", self)
 
 		self.parent.L = 300
-		self.parent.diam = 10
+		self.parent.diam = 0.2
 		self.side1.L = self.side2.L = 600
-		self.side1.diam = self.side2.diam = 5
+		self.side1.diam = self.side2.diam = 0.1
 
 		super().__init__(0.2,3,gid)
 	def _connect(self):
 		super()._connect()
-		self.parent.connect(self.main_shaft(0.012))
+		self.parent.connect(self.main_shaft(0.5))
 		self.side1.connect(self.parent(1))
 		self.side2.connect(self.parent(1))
 
@@ -38,3 +39,37 @@ def resist_in(sec):
 		zz.loc(sec)
 		zz.compute(0)
 		return zz.input(sec)
+
+
+m = Resist_cell(0)
+stim = h.IClamp(m.parent(0.5))
+stim.delay = 5
+stim.dur = 0.3125
+stim.amp = 200
+
+h.finitialize(-69)
+h.continuerun(100)
+
+ir_list_prox_par = []
+ir_list_dist_par = []
+ir_list_dist_side = []
+
+for i in range(1,301):
+	m.side1.L = m.side2.L = i
+	ir_list_prox_par.append(resist_in(m.parent(0)))
+	ir_list_dist_par.append(resist_in(m.parent(1)))
+	ir_list_dist_side.append(resist_in(m.side1(1)))
+
+print("input resistances collected")
+
+
+plt.plot(ir_list_prox_par, label="prox parent")
+plt.plot(ir_list_dist_par, label="dist parent")
+plt.plot(ir_list_dist_side, label="dist side")
+plt.xlabel("length of side branches")
+plt.ylabel("input resistance")
+plt.title("input resistance with varying side branch lengths")
+plt.legend()
+plt.grid()
+plt.show()
+

@@ -1,4 +1,4 @@
-from gnatsolv.cells.tapertypes import *
+from cells.tapertypes import *
 from neuron import h
 import matplotlib.pyplot as plt
 h.load_file("stdrun.hoc")
@@ -32,5 +32,5 @@ def find_imp(imp_list,part):
 	run()
 	for seg in part:
 		#print(imped(seg))
-		Imp_list.append(imped(seg))
+		imp_list.append(imped(seg))
 	return f"Impedances found for {part}"
