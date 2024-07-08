@@ -38,7 +38,10 @@ class SmartShaft():
         sec.L -= dist
         return new
     def merge(self,i):
-        sec = self.shaftlist[i]
+        if isinstance(i, int):
+            sec = self.shaftlist[i]
+        else:
+            sec = i
         mergesec = self.shaftlist[i+1]
         children = sec.children()
         if len(children) > 1:
@@ -76,10 +79,34 @@ class SmartBranchCell(BaseExpCell):
         self.shaftlist  = [self.main_shaft]
         self.shaft = SmartShaft()
         self.shaft.shaftlist = self.shaftlist
+        self.branchcnt = 0
         self.branchlist = []
-    def newbranch(self, L, diam = None):
+    def newbranch(self, L, dist, diam = None):
         if diam is None:
-            diam = self.prop_site.diam
+            diam = self.main_diam/self.ratio
+        new = h.Section(name = f"branch[{self.branchcnt}]", cell = self)
+        self.branchcnt += 1
+        new.L = L
+        new.diam = diam
+        self.branchlist.append(new)
+        i ,parsec = self.shaft.insert(dist)
+        new.connect(parsec(1))
+        self.all = self.soma.wholetree()
+        kin.insmod_Traub(new        , "axon")
+        kin.insmod_Traub(parsec     , "axon")
+        self._normalize()
+    def rmbranch(self, ind):
+        if isinstance(ind,int):
+            branch = self.branchlist[ind]
+        else:
+            branch = ind
+        branch.disconnect()
+        parent = branch.parentseg().sec
+        self.shaft.merge(parent)
+    def _setup_morph(self):
+        super()._setup_morph()
+        self.IS.diam = self.IS_diam
+
     def _connect(self):
         self.IS.connect(self.soma(1))
         self.main_shaft.connect(self.IS(1)) # (line 107)
