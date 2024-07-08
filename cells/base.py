@@ -68,13 +68,6 @@ class BaseExpCell(ABC):
         self.soma_diam = self.s_ratio*self.IS_diam
         self._setup_bioph()
         self._setup_morph()
-        self._taper_IS()
-        self._connect()    # connections must be made first for self.all to be correct
-        self.all = self.soma.wholetree()
-        #the following definitions for section diameter are taken from lines 89-105. 
-        self._normalize()   # this must be executed after bioph, and after self.all declaration
-    def _taper_IS(self):
-        self.IS.diam = self.IS_diam
 
     def _setup_morph(self):
         """setup morphology by initializing diameters, then connecting the segments (see _connect), then normalizing dx"""
@@ -82,15 +75,20 @@ class BaseExpCell(ABC):
         self.IS.L = 40 # line 98 
         self.main_shaft.L = self.main_length * eq.elength(self.main_shaft, d = self.main_diam)
         self.main_shaft.diam = self.main_diam
-        # self.prop_site.diam = self.main_diam/self.ratio
-        self.prop_site.diam = self.main_diam
+        self.prop_site.diam = self.main_diam/self.ratio
+        self._connect()     # connections must be made first for self.all to be correct
         
+        self.all = self.soma.wholetree()
+        #the following definitions for section diameter are taken from lines 89-105. 
+        self._normalize()   # this must be executed after bioph 
+
+
     def _connect(self):
         """Connect all the sections
         Returns: None"""
         self.IS.connect(self.soma(1))
         self.main_shaft.connect(self.IS(1)) # (line 107)
-        self.prop_site.connect(self.main_shaft(1))  # more accurate to legacy code 
+        self.prop_site.connect(self.main_shaft(0)) 
 
     @abstractmethod
     def _setup_bioph(self):

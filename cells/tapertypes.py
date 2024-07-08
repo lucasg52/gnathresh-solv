@@ -23,7 +23,7 @@ class ExpCell_3dtaper(BaseExpCell):
                  ratio,
                  gid = gid,
                  layer = layer)
-    def __taperIS(self):
+    def _taperIS(self):
         """
         evaluate the geometry of the IS based on IS_diam, s_ratio, ell_c, soma.diam, and
         main_shaft.diam
@@ -41,7 +41,7 @@ class ExpCell_3dtaper(BaseExpCell):
         self.IS = IS
     def _setup_morph(self):
         super()._setup_morph()
-        self.__taperIS()
+        self._taperIS()
         self.all = self.soma.wholetree()
     def _setup_bioph(self):
         """Inserts standard modTraub parameters (see /cells/kinetics.py)"""
