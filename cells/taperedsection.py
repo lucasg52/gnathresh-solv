@@ -87,10 +87,8 @@ class TaperedSection():
         h.pt3dadd(*prevargs , sec = sec) 
         h.pt3dadd(*nextargs , sec = sec) 
 
-        sec.insert("pas") # required for calculating elength, for normalize_dlambda
-        print("review celltemplates.py, reinsert_section")
+        # print("review celltemplates.py, reinsert_section")
 
-        normalize_dlambda(sec)
 
 ### The following methods are not part of the __init__ block, and are not nescessary for review. They only exist for syntatic convience.###
 
