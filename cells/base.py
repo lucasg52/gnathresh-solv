@@ -75,7 +75,8 @@ class BaseExpCell(ABC):
         self.IS.L = 40 # line 98 
         self.main_shaft.L = self.main_length * eq.elength(self.main_shaft, d = self.main_diam)
         self.main_shaft.diam = self.main_diam
-        self.prop_site.diam = self.main_diam/self.ratio
+        # self.prop_site.diam = self.main_diam/self.ratio
+        self.prop_site.diam = self.main_diam
         self._connect()     # connections must be made first for self.all to be correct
         
         self.all = self.soma.wholetree()
@@ -88,7 +89,7 @@ class BaseExpCell(ABC):
         Returns: None"""
         self.IS.connect(self.soma(1))
         self.main_shaft.connect(self.IS(1)) # (line 107)
-        self.prop_site.connect(self.main_shaft(0)) 
+        self.prop_site.connect(self.main_shaft(1))  # more accurate to legacy code 
 
     @abstractmethod
     def _setup_bioph(self):
