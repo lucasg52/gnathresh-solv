@@ -68,7 +68,10 @@ class BaseExpCell(ABC):
         self.soma_diam = self.s_ratio*self.IS_diam
         self._setup_bioph()
         self._setup_morph()
+        self._taper_IS()
         self._connect()
+    def _taper_IS(self):
+        self.IS.diam = self.IS_diam
 
     def _setup_morph(self):
         """setup morphology by initializing diameters, then connecting the segments (see _connect), then normalizing dx"""
