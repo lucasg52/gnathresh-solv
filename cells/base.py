@@ -69,7 +69,10 @@ class BaseExpCell(ABC):
         self._setup_bioph()
         self._setup_morph()
         self._taper_IS()
-        self._connect()
+        self._connect()    # connections must be made first for self.all to be correct
+        self.all = self.soma.wholetree()
+        #the following definitions for section diameter are taken from lines 89-105. 
+        self._normalize()   # this must be executed after bioph, and after self.all declaration
     def _taper_IS(self):
         self.IS.diam = self.IS_diam
 
@@ -81,13 +84,7 @@ class BaseExpCell(ABC):
         self.main_shaft.diam = self.main_diam
         # self.prop_site.diam = self.main_diam/self.ratio
         self.prop_site.diam = self.main_diam
-     # connections must be made first for self.all to be correct
         
-        self.all = self.soma.wholetree()
-        #the following definitions for section diameter are taken from lines 89-105. 
-        self._normalize()   # this must be executed after bioph 
-
-
     def _connect(self):
         """Connect all the sections
         Returns: None"""
