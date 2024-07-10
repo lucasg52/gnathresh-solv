@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm as cmap
 from neuron import h
-from expermt.Laura_27.testing_Rin import Resist_cell_2d, Resist_cell_1b
+from expermt.Laura_27.testing_Rin import Resist_cell_1b
 from cells.adoptedeq import elength
 import cells.adoptedeq as gnat
 from cells.tools import APRecorder
@@ -85,11 +85,11 @@ def fullsearch(nsteps):
 		# print(search.a)
 	return search.a
 
-m = Resist_cell_2d(0)
+m = Resist_cell_1b(0)
 m.prop_site.connect(m.main_shaft(1))
 m.parent.L = 118
 m.side1.L = 118
-stim = h.IClamp(m.side1(0.9))
+stim = h.IClamp(m.parent(0.5))
 stim.amp = 200 #nA
 stim.dur = 5 #ms
 stim.delay = 0.3125 #ms
@@ -100,3 +100,7 @@ rec = APRecorder(m.prop_site)
 # gna_collect = np.ones((m.main_shaft.nseg, 10))
 # resist_list = []
 # search_list = []
+
+
+
+
