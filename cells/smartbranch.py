@@ -16,6 +16,7 @@ class LambdaSec():
 
 class SmartShaft():
     """unimplemented"""
+    #give it a dx
     def __init__(self):
         self.shaftlist = []
     def measureto(self, dist):
@@ -38,7 +39,11 @@ class SmartShaft():
         sec.L -= dist
         return new
     def merge(self,i):
-        sec = self.shaftlist[i]
+        if isinstance(i, int):
+            sec = self.shaftlist[i]
+        else:
+            sec = i
+            i = self.shaftlist.index(sec)
         mergesec = self.shaftlist[i+1]
         children = sec.children()
         if len(children) > 1:
@@ -49,7 +54,8 @@ class SmartShaft():
         sec.disconnect()
         mergesec.L += sec.L
         mergesec.connect(parent)
-        del sec
+        self.shaftlist.pop(i)
+        h.delete_section(sec = sec)
         return mergesec
 
     def insert(self, dist):
@@ -76,10 +82,38 @@ class SmartBranchCell(BaseExpCell):
         self.shaftlist  = [self.main_shaft]
         self.shaft = SmartShaft()
         self.shaft.shaftlist = self.shaftlist
+        self.branchcnt = 0
         self.branchlist = []
-    def newbranch(self, L, diam = None):
+    def newbranch(self, L, dist, diam = None, new = None):
         if diam is None:
-            diam = self.prop_site.diam
+            diam = self.main_diam/self.ratio
+        if new is None:
+            new = h.Section(name = f"branch[{self.branchcnt}]", cell = self)
+            kin.insmod_Traub(new        , "axon")
+        self.branchcnt += 1
+        new.L = L
+        new.diam = diam
+        self.branchlist.append(new)
+        i ,parsec = self.shaft.insert(dist)
+        new.connect(parsec(1))
+        self.all = self.soma.wholetree()
+        kin.insmod_Traub(parsec     , "axon")
+        self._normalize() #needs to be removed
+    def rmbranch(self, ind):
+        if isinstance(ind,int):
+            branch = self.branchlist[ind]
+        else:
+            branch = ind
+            ind = self.branchlist.index(branch)
+        parent = branch.parentseg().sec
+        branch.disconnect()
+        self.branchlist.pop(ind)
+        self.shaft.merge(parent)
+        
+    def _setup_morph(self):
+        super()._setup_morph()
+        self.IS.diam = self.IS_diam
+
     def _connect(self):
         self.IS.connect(self.soma(1))
         self.main_shaft.connect(self.IS(1)) # (line 107)
