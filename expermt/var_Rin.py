@@ -5,7 +5,7 @@ from neuron import h
 from expermt.Laura_27.testing_Rin import Resist_cell_2d, Resist_cell_1b
 from cells.adoptedeq import elength
 import cells.adoptedeq as gnat
-from cells.tools import APRecorder
+from tools.aprecorder import APRecorder
 from solver.searchclasses import BinSearch
 h.load_file("stdrun.hoc")
 
@@ -22,31 +22,72 @@ def imped(part):
 	imp_geter.compute(0)
 	return imp_geter.input(part)
 
-def lam_col(start, stop, r_collector, g_collector, cell, rec_place):
+def my_imped(part):
+	for sec in m.all:
+		if sec is not m.soma:
+			sec.gbar_nafTraub = 0
+			sec.gbar_kdrTraub = 0
+	stim = h.IClamp(part)
+	stim.amp = 200
+	stim.dur = 51
+	stim.delay = 5
+	h.finitialize(-70)
+	h.continuerun(55)
+	return part.v/stim.amp
+	#treturn f"input resistance at {part} = {part.v/stim.amp} mV/nA"
+
+def lam_resist_col(stop, r_collector, cell, rec_place): #imp_solver): #g_collector,
 	j=-1
 	for seg in cell.main_shaft:
 		j+=1
 		cell.parent.connect(seg)
-		for i in range(start*10,stop*10+1,1):
+		for i in range(1,stop*10+1,1):
 			set_ELen(cell.side1, i/10, 0.1)
 			set_ELen(cell.side2,i/10,0.1)
 			cell._normalize()
-			r_collector[j][i-(start*10+1)]*=imped(rec_place)
-			g_collector[j][i-(start*10+1)] *= fullsearch(10)
-	print(f"successfully gotten input resistances at {rec_place} and g_na thresh")
+			# if imp_solver == imped:
+			# 	r_collector[j][i - 1] *= imped(rec_place)
+			#if imp_solver == my_imped:
+			r_collector[j][i-1]*= my_imped(rec_place)
+			#g_collector[j][i-1] *= fullsearch(10)
+	print(f"successfully gotten input resistances at {rec_place}")
 
-def diam_col(min, max, d_dim, r_collector, g_collector, cell, rec_place):
+def lam_gna_col(stop, g_collector, cell): #imp_solver): #g_collector,
 	j=-1
 	for seg in cell.main_shaft:
 		j+=1
 		cell.parent.connect(seg)
-		for i in range(min*10,max*10,d_dim*10):
+		for i in range(1,stop*10+1,1):
+			set_ELen(cell.side1, i/10, 0.1)
+			set_ELen(cell.side2,i/10,0.1)
+			cell._normalize()
+			g_collector[j][i-1] *= fullsearch(10)
+	print(f"successfully retrieved gna thresh")
+
+def diam_resist_col(min, max, d_dim, r_collector, cell, rec_place):
+	j=-1
+	for seg in cell.main_shaft:
+		j+=1
+		cell.parent.connect(seg)
+		for i in range(min,max,d_dim):
 			cell.side1.diam = cell.side2.diam = i/10
 			cell._normalize()
-			r_collector[j][i-1]*=imped(rec_place)
+			r_collector[j][i-1]*=my_imped(rec_place)
+			#g_collector[j][i-1] *= fullsearch(10)
+			print(f"{j},{i - 1}: {cell.side1.diam}")
+	print(f"successfully found input resistances at {rec_place}")
+
+def diam_gna_col(min, max, d_dim, g_collector, cell):
+	j=-1
+	for seg in cell.main_shaft:
+		j+=1
+		cell.parent.connect(seg)
+		for i in range(min,max,d_dim):
+			cell.side1.diam = cell.side2.diam = i/10
+			cell._normalize()
 			g_collector[j][i-1] *= fullsearch(10)
 			print(f"{j},{i - 1}: {cell.side1.diam}")
-	print(f"successfully found input resistances at {rec_place} and g_na thresh")
+	print(f"successfully found gna")
 
 def lamb_col_partial(min, max, r_list, g_list, cell, rec_loc):
 	for i in range(min*10, max*10+1, 1):
@@ -72,8 +113,8 @@ def plot(size_x, size_y,matx, xlabel, ylabel, zlabel, title):
 	ax.set_title(title)
 	plt.show()
 
-def test(g_na, cell):
-	cell.setgna(g_na)
+def test(g_na):
+	m.setgna(g_na)
 	h.finitialize(-70)
 	h.continuerun(15)
 	return rec.proptest()
@@ -96,7 +137,7 @@ stim.delay = 0.3125 #ms
 rec = APRecorder(m.prop_site)
 
 # length = 3
-# resist_collect = np.ones((m.main_shaft.nseg, 10))
-# gna_collect = np.ones((m.main_shaft.nseg, 10))
+resist_collect = np.ones((m.main_shaft.nseg, 30))
+gna_collect = np.ones((m.main_shaft.nseg, 30))
 # resist_list = []
 # search_list = []
