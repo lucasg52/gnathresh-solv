@@ -17,63 +17,63 @@ def set_ELen(section, length, dx):
 	return
 
 def imped(part):
-	zz = h.Impedance()
-	zz.loc(part)
-	zz.compute(0)
-	return zz.input(part)
+	imp_geter = h.Impedance()
+	imp_geter.loc(part)
+	imp_geter.compute(0)
+	return imp_geter.input(part)
 
-def lambda_collect(length, start, r_collector, g_collector, m, rec_place):
+def lam_col(start, stop, r_collector, g_collector, cell, rec_place):
 	j=-1
-	for seg in m.main_shaft:
+	for seg in cell.main_shaft:
 		j+=1
-		m.parent.connect(seg)
-		for i in range(30,length*10+1,1):
-			set_ELen(m.side1, i/10, 0.1)
-			set_ELen(m.side2,i/10,0.1)
-			m._normalize()
-			#print(f"{j},{i-1}: {m.parent.nseg}")
-			r_collector[j][i-start]*=imped(rec_place)
-			g_collector[j][i-start] *= fullsearch(10)
+		cell.parent.connect(seg)
+		for i in range(start*10,stop*10+1,1):
+			set_ELen(cell.side1, i/10, 0.1)
+			set_ELen(cell.side2,i/10,0.1)
+			cell._normalize()
+			r_collector[j][i-(start*10+1)]*=imped(rec_place)
+			g_collector[j][i-(start*10+1)] *= fullsearch(10)
 	print(f"successfully gotten input resistances at {rec_place} and g_na thresh")
 
-def diam_collect(r_collector, g_collector, m, rec_place):
+def diam_col(min, max, d_dim, r_collector, g_collector, cell, rec_place):
 	j=-1
-	for seg in m.main_shaft:
+	for seg in cell.main_shaft:
 		j+=1
-		m.parent.connect(seg)
-		for i in range(1,11,1):
-			m.side1.diam = m.side2.diam = i/10
-			m._normalize()
+		cell.parent.connect(seg)
+		for i in range(min*10,max*10,d_dim*10):
+			cell.side1.diam = cell.side2.diam = i/10
+			cell._normalize()
 			r_collector[j][i-1]*=imped(rec_place)
 			g_collector[j][i-1] *= fullsearch(10)
-			print(f"{j},{i - 1}: {m.side1.diam}")
-	print(f"successfully gotten input resistances at {rec_place} and g_na thresh")
+			print(f"{j},{i - 1}: {cell.side1.diam}")
+	print(f"successfully found input resistances at {rec_place} and g_na thresh")
 
-def lamb_partial_collect(length,rec_place, collect_list, g_list):
-	for i in range(1, length * 10 + 1, 1):
-		set_ELen(m.side1, i / 10, 0.1)
-		set_ELen(m.side2, i / 10, 0.1)
-		m._normalize()
-		collect_list.append(imped(rec_place))
+def lamb_col_partial(min, max, r_list, g_list, cell, rec_loc):
+	for i in range(min*10, max*10+1, 1):
+		set_ELen(cell.side1, i / 10, 0.1)
+		set_ELen(cell.side2, i / 10, 0.1)
+		cell._normalize()
+		r_list.append(imped(rec_loc))
 		g_list.append(fullsearch(10))
-		print(m.side1.L)
-	print(f"collected isolated resistances at {rec_place} and gna_thresh")
+		print(cell.side1.L)
+	print(f"collected isolated resistances at {rec_loc} and gna_thresh")
 
-def plot(length,matx):
+def plot(size_x, size_y,matx, xlabel, ylabel, zlabel, title):
 	fig, ax = plt.subplots(nrows=1,ncols=1,figsize=(8,4))
 	ax = fig.add_subplot(projection='3d')
-	x0 = [i for i in range(0, length*10, 1)]
-	y0 = [i for i in range(0, m.main_shaft.nseg, 1)]
+	x0 = [i for i in range(0, size_x, 1)]
+	y0 = [i for i in range(0, size_y, 1)]
 	X0,Y0 = np.meshgrid(x0,y0)
 	Z0 = matx
 	ax.plot_surface(X0/10, Y0, Z0,alpha=0.5, cmap = cmap.viridis)
-	ax.set_xlabel('length of side branches in lambda')
-	ax.set_ylabel('node along main shaft')
-	ax.set_zlabel('input resistance')
+	ax.set_xlabel(xlabel)#'length of side branches in lambda'
+	ax.set_ylabel(ylabel)#'node along main shaft')
+	ax.set_zlabel(zlabel)#'input resistance')
+	ax.set_title(title)
 	plt.show()
 
-def test(g_na):
-	m.setgna(g_na)
+def test(g_na, cell):
+	cell.setgna(g_na)
 	h.finitialize(-70)
 	h.continuerun(15)
 	return rec.proptest()
