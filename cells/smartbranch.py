@@ -16,6 +16,7 @@ class LambdaSec():
 
 class SmartShaft():
     """unimplemented"""
+    #give it a dx
     def __init__(self):
         self.shaftlist = []
     def measureto(self, dist):
@@ -97,7 +98,7 @@ class SmartBranchCell(BaseExpCell):
         new.connect(parsec(1))
         self.all = self.soma.wholetree()
         kin.insmod_Traub(parsec     , "axon")
-        self._normalize()
+        self._normalize() #needs to be removed
     def rmbranch(self, ind):
         if isinstance(ind,int):
             branch = self.branchlist[ind]
@@ -108,6 +109,7 @@ class SmartBranchCell(BaseExpCell):
         branch.disconnect()
         self.branchlist.pop(ind)
         self.shaft.merge(parent)
+        
     def _setup_morph(self):
         super()._setup_morph()
         self.IS.diam = self.IS_diam
