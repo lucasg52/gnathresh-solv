@@ -50,24 +50,19 @@ def fullsolve(steps = 12):
             search.searchstep()
     return search.a
 
-def experiment(d1, d2, l1, l2, steps = 12):#,discon = True):
-    global stim,b_p,b_s
+def experiment(dists, lens, steps = 12):#,discon = True):
+    assert len(dists) == len(lens)
     assert h.dt == pow(2,-8)
     assert m.dx == pow(2,-5)
-    if b_p is None:
-        b_p = h.Section(name = "parent"    ,cell = m)
-        kin.insmod_Traub(b_p        , "axon")
-    if b_s is None:
-        b_s = h.Section(name = "side"      ,cell = m)
-        kin.insmod_Traub(b_s        , "axon")
     if stim is None:
         stim = h.IClamp(b_p(1))
         stim.amp = 200
         stim.dur = 5/16
         stim.delay = 5
     disconnect()
-    m.newbranch( (l1+ __PAR_ADD_LAM__) * __BRAN_LAM__, d1, new= b_p)
-    m.newbranch(l2 * __BRAN_LAM__, d2, new= b_s)
+    for d, L, in zip(dists, lens):
+        m.newbranch(d, L)
+        m.branchlist[-1].insmod_Traub(
     if proptest(0):
         ret = 0.0
     elif not proptest(__MAXGBAR__):
@@ -87,32 +82,31 @@ def makerand(leng, seed = __SEED__):
         retarr.append(random.random())
     return retarr
 
-def makepairs(leng, lo, hi, seed = __SEED__, offset = 0, lohi2 = None):
-    if lohi2 is not None:
-        lo2, hi2 = lohi2 #unimplimented
-    genlen = leng+ offset
-    randarr = np.array(makerand(genlen *2, seed = seed))
-    randarr = randarr * (hi-lo)
-    randarr += lo * np.ones(genlen * 2)
-    randarr = randarr.reshape(genlen ,2)
-    if offset:
-        randarr = randarr[offset::]
-    return randarr
-
+def randtable(leng, los, his, seed = __SEED__, offset = 0):
+    colcnt = len(los)
+    assert colcnt == len(his)
+    coef = np.identity(colcnt) * np.array([[hi - lo,] for (lo, hi) in zip(los, his)])
+    lomatx = np.tile(los, (leng, 1)) 
+    rand = np.array(makerand(colcnt * leng)[(colcnt * offset)::])
+    rect = rand.reshape(leng, colcnt)
+    scaled = np.matmul(rect, coef)
+    ret = scaled + lomatx
+    return ret
 
 def groundtruth(simcnt, steps = 12, **kwargs):
-    dists = makepairs(simcnt, 0, __MAIN_L__, **kwargs)
-    lengs = makepairs(simcnt, __MINLAM__, __MAXLAM__ , **kwargs)
+    table = randtable(
+                leng = simcnt,
+                los  = (0,0,__MIN)
+            )
     h.dt = pow(2,-8) 
     m.dx = pow(2,-5)
-    joint = np.hstack((dists,lengs))
-    return [experiment(*row, steps = steps) for row in joint], joint
+    return [experiment(*row, steps = steps) for row in table], joint
 
 
 def dryrun(simcnt, **kwargs):
-    dists = makepairs(simcnt, 0, __MAIN_L__, **kwargs)
+    dists = randtable(simcnt, 0, __MAIN_L__, **kwargs)
     print(dists)
-    lengs = makepairs(simcnt, __MINLAM__, __MAXLAM__ , **kwargs)
+    lengs = randtable(simcnt, __MINLAM__, __MAXLAM__ , **kwargs)
     print(lengs)
 
     return np.hstack((dists,lengs))

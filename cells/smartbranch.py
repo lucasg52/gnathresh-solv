@@ -94,10 +94,11 @@ class SmartBranchCell(BaseExpCell):
         new.L = L
         new.diam = diam
         self.branchlist.append(new)
+        #   make sure the new section has traub shit
         i ,parsec = self.shaft.insert(dist)
+        kin.insmod_Traub(parsec     , "axon")
         new.connect(parsec(1))
         self.all = self.soma.wholetree()
-        kin.insmod_Traub(parsec     , "axon")
         self._normalize() #needs to be removed
     def rmbranch(self, ind):
         if isinstance(ind,int):
