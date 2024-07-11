@@ -1,4 +1,4 @@
-from cells.tapertypes import *
+from cells.tapertypes import ExpCell_3dtaper
 from neuron import h
 import matplotlib.pyplot as plt
 h.load_file("stdrun.hoc")
