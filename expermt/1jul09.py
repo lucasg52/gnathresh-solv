@@ -9,8 +9,12 @@ import numpy as np
 import random
 m = SmartBranchCell(0.2, 3)
 rec = APRecorder(m.prop_site)
+h.load_file("stdrun.hoc")
 h.tstop = 10
-stim = b_p = b_s = None
+__NULLSEC__ = h.Section(name = "nullsec")
+__NULLSEC__.L = 0.1
+__NULLSEC__.diam = 0.1
+stim = h.IClamp(__NULLSEC__(1))
 __SEED__ = "gna"
 __BRAN_LAM__ = eq.elength(m.prop_site) 
 m.prop_site.diam = m.main_shaft.diam
@@ -20,7 +24,6 @@ __MINLAM__ = 1
 __MAXLAM__ = 3
 __PAR_ADD_LAM__ = 2
 __MAXGBAR__ = 0.4
-h.load_file("stdrun.hoc")
 def ngui():
     from neuron import gui
     print(gui)
@@ -36,7 +39,7 @@ def set_gbar(m, gbar):
 def proptest(gbar):
     set_gbar(m, gbar)
     h.finitialize(-69)
-    h.continuerun()
+    h.continuerun(h.tstop)
     #print(ret)
     return rec.proptest()
 def searchreset_err(a, err):
@@ -50,26 +53,29 @@ def fullsolve(steps = 30, tstop_init = 10):
     search = BinSearch(0, __MAXGBAR__, proptest)
     for i in range(steps):
             search.searchstep()
-            if proptest():
-                if (h.tstop - rec.recorded[0]) > h.tstop/2:
-                    h.tstop *= 1.5
+            if rec.proptest():
+                if rec.recorded[0] > 0.6 * h.tstop:
+                    h.tstop += 5    #addition because for some reason h.tstop does not like being multiplied
+                    print(h.tstop)
     return search.a
 
-def experiment(dists, lens, steps = 12):#,discon = True):
+def experiment(dists, lens, steps = 30):#,discon = True):
     global stim
     assert len(dists) == len(lens)
     assert h.dt == pow(2,-8)
     assert m.dx == pow(2,-5)
+    lens = np.multiply(lens, __BRAN_LAM__)
+    print(dists, lens)
     
     disconnect()
     for d, L, in zip(dists, lens):
-        m.newbranch(d, L)
-        m.branchlist[-1].insmod_Traub() # idk
-    if stim is None:
-        stim = h.IClamp(b_p(1))
-        stim.amp = 200
-        stim.dur = 5/16
-        stim.delay = 5
+        print (L)
+        m.newbranch(L , d)
+    stim.loc(m.branchlist[0](1))
+    stim.amp = 200
+    stim.dur = 5/16
+    stim.delay = 5
+    print(stim.get_segment())
     if proptest(0):
         ret = 0.0
     elif not proptest(__MAXGBAR__):
@@ -100,14 +106,26 @@ def randtable(leng, los, his, seed = __SEED__, offset = 0):
     ret = scaled + lomatx
     return ret
 
-def groundtruth(simcnt, steps = 12, **kwargs):
-    table = randtable(
+def groundtruth(simcnt, steps = 30, **kwargs):
+    disttable = randtable(
                 leng = simcnt,
-                los  = (0,0,__MIN)
+                los  = (0,0,0),
+                his = (__MAIN_L__, __MAIN_L__, __MAIN_L__),
+                **kwargs
+            )
+    lamtable = randtable(
+                leng = simcnt,
+                los  =  (__MINLAM__ + __PAR_ADD_LAM__, __MINLAM__, __MINLAM__),
+                his =   (__MAXLAM__ + __PAR_ADD_LAM__, __MAXLAM__, __MAXLAM__),
+                **kwargs
             )
     h.dt = pow(2,-8) 
     m.dx = pow(2,-5)
-    return [experiment(row[:4], row[4::], steps = steps) for row in table]
+    return [
+            experiment(dists, lens, steps = steps)
+            for dists, lens 
+            in zip(disttable, lamtable)
+            ], disttable, lamtable
 
 
 def dryrun(simcnt, **kwargs):
