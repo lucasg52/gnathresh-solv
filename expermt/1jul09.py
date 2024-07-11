@@ -9,6 +9,7 @@ import numpy as np
 import random
 m = SmartBranchCell(0.2, 3)
 rec = APRecorder(m.prop_site)
+h.tstop = 10
 stim = b_p = b_s = None
 __SEED__ = "gna"
 __BRAN_LAM__ = eq.elength(m.prop_site) 
@@ -35,7 +36,7 @@ def set_gbar(m, gbar):
 def proptest(gbar):
     set_gbar(m, gbar)
     h.finitialize(-69)
-    h.continuerun(10)
+    h.continuerun()
     #print(ret)
     return rec.proptest()
 def searchreset_err(a, err):
@@ -44,25 +45,31 @@ def searchreset_err(a, err):
     lo = a - err
     search = BinSearch(lo, hi, proptest)
 
-def fullsolve(steps = 12):
+def fullsolve(steps = 30, tstop_init = 10):
+    h.tstop  = tstop_init
     search = BinSearch(0, __MAXGBAR__, proptest)
     for i in range(steps):
             search.searchstep()
+            if proptest():
+                if (h.tstop - rec.recorded[0]) > h.tstop/2:
+                    h.tstop *= 1.5
     return search.a
 
 def experiment(dists, lens, steps = 12):#,discon = True):
+    global stim
     assert len(dists) == len(lens)
     assert h.dt == pow(2,-8)
     assert m.dx == pow(2,-5)
+    
+    disconnect()
+    for d, L, in zip(dists, lens):
+        m.newbranch(d, L)
+        m.branchlist[-1].insmod_Traub() # idk
     if stim is None:
         stim = h.IClamp(b_p(1))
         stim.amp = 200
         stim.dur = 5/16
         stim.delay = 5
-    disconnect()
-    for d, L, in zip(dists, lens):
-        m.newbranch(d, L)
-        m.branchlist[-1].insmod_Traub() # idk
     if proptest(0):
         ret = 0.0
     elif not proptest(__MAXGBAR__):
