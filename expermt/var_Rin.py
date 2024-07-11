@@ -137,9 +137,9 @@ stim.amp = 200 #nA
 stim.dur = 5 #ms
 stim.delay = 0.3125 #ms
 rec = APRecorder(m.prop_site)
-
-# length = 3
-resist_collect = np.ones((m.main_shaft.nseg, 30))
-gna_collect = np.ones((m.main_shaft.nseg, 30))
-# resist_list = []
-# search_list = []
+#
+# # length = 3
+# resist_collect = np.ones((m.main_shaft.nseg, 30))
+# gna_collect = np.ones((m.main_shaft.nseg, 30))
+# # resist_list = []
+# # search_list = []

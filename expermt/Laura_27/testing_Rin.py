@@ -105,13 +105,15 @@ def resist_in(sec):
 		return zz.input(sec)
 
 # m = Resist_cell(0)
-# stim = h.IClamp(m.parent(0.5))
-# stim.delay = 5
-# stim.dur = 0.3125
-# stim.amp = 200
-#
-# h.finitialize(-69)
-# h.continuerun(100)
+def stim_ste(loc):
+	stim = h.IClamp(loc)
+	stim.delay = 5
+	stim.dur = 0.3125
+	stim.amp = 200
+
+def run():
+	h.finitialize(-69)
+	h.continuerun(100)
 #
 #
 # list1 = ir_list_prox_par = []
