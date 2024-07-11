@@ -23,10 +23,6 @@ def imped(part):
 	return imp_geter.input(part)
 
 def my_imped(part):
-	for sec in m.all:
-		if sec is not m.soma:
-			sec.gbar_nafTraub = 0
-			sec.gbar_kdrTraub = 0
 	stim = h.IClamp(part)
 	stim.amp = 200
 	stim.dur = 51
@@ -36,8 +32,12 @@ def my_imped(part):
 	return part.v/stim.amp
 	#treturn f"input resistance at {part} = {part.v/stim.amp} mV/nA"
 
-def lam_resist_col(stop, r_collector, cell, rec_place): #imp_solver): #g_collector,
+def lam_resist_col(stop, r_collector, cell, rec_place): #, g_collector, imp_solver):
 	j=-1
+	for sec in cell.all:
+		if sec is not cell.soma:
+			sec.gbar_nafTraub = 0
+			sec.gbar_kdrTraub = 0
 	for seg in cell.main_shaft:
 		j+=1
 		cell.parent.connect(seg)
@@ -50,7 +50,7 @@ def lam_resist_col(stop, r_collector, cell, rec_place): #imp_solver): #g_collect
 			#if imp_solver == my_imped:
 			r_collector[j][i-1]*= my_imped(rec_place)
 			#g_collector[j][i-1] *= fullsearch(10)
-	print(f"successfully gotten input resistances at {rec_place}")
+	print(f"successfully calculated input resistances at {rec_place}")
 
 def lam_gna_col(stop, g_collector, cell): #imp_solver): #g_collector,
 	j=-1
@@ -86,8 +86,10 @@ def diam_gna_col(min, max, d_dim, g_collector, cell):
 			cell.side1.diam = cell.side2.diam = i/10
 			cell._normalize()
 			g_collector[j][i-1] *= fullsearch(10)
-			print(f"{j},{i - 1}: {cell.side1.diam}")
+			print(f"{j},{i-1}: {cell.side1.diam}")
 	print(f"successfully found gna")
+
+
 
 def lamb_col_partial(min, max, r_list, g_list, cell, rec_loc):
 	for i in range(min*10, max*10+1, 1):
