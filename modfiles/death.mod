@@ -1,6 +1,6 @@
 NEURON {
 	POINT_PROCESS DeathRec
-	RANGE deatht, vthresh
+	RANGE deatht, begin, vthresh
 }
 PARAMETER {
 	vthresh = -55 (millivolt)
@@ -11,6 +11,7 @@ ASSIGNED{
 }
 INITIAL{
 	deatht = 0
+	begin = 0
 }
 AFTER SOLVE{
 	if (begin == 0){
