@@ -62,7 +62,7 @@ def experiment(dists, lens, steps = 12):#,discon = True):
     disconnect()
     for d, L, in zip(dists, lens):
         m.newbranch(d, L)
-        m.branchlist[-1].insmod_Traub(
+        m.branchlist[-1].insmod_Traub() # idk
     if proptest(0):
         ret = 0.0
     elif not proptest(__MAXGBAR__):
@@ -100,7 +100,7 @@ def groundtruth(simcnt, steps = 12, **kwargs):
             )
     h.dt = pow(2,-8) 
     m.dx = pow(2,-5)
-    return [experiment(*row, steps = steps) for row in table], joint
+    return [experiment(row[:4], row[4::], steps = steps) for row in table]
 
 
 def dryrun(simcnt, **kwargs):
