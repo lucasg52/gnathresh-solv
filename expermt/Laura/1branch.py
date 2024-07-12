@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm as cmap
 from neuron import h
-from expermt.Laura_27.testing_Rin import Resist_cell_2d, Resist_cell_1b
+from expermt.Laura.testing_Rin import Resist_cell_1b
 from cells.adoptedeq import elength
 import cells.adoptedeq as gnat
 from tools.aprecorder import APRecorder
@@ -32,7 +32,7 @@ def my_imped(part):
 	return part.v/stim.amp
 	#treturn f"input resistance at {part} = {part.v/stim.amp} mV/nA"
 
-def lam_resist_col(stop, r_collector, cell, rec_place): #, g_collector, imp_solver):
+def lam_resist_col(stop, r_collector, cell, rec_place):
 	j=-1
 	for sec in cell.all:
 		if sec is not cell.soma:
@@ -43,23 +43,17 @@ def lam_resist_col(stop, r_collector, cell, rec_place): #, g_collector, imp_solv
 		cell.parent.connect(seg)
 		for i in range(1,stop*10+1,1):
 			set_ELen(cell.side1, i/10, 0.1)
-			set_ELen(cell.side2,i/10,0.1)
 			cell._normalize()
-			# if imp_solver == imped:
-			# 	r_collector[j][i - 1] *= imped(rec_place)
-			#if imp_solver == my_imped:
 			r_collector[j][i-1]*= my_imped(rec_place)
-			#g_collector[j][i-1] *= fullsearch(10)
 	print(f"successfully calculated input resistances at {rec_place}")
 
-def lam_gna_col(stop, g_collector, cell): #imp_solver): #g_collector,
+def lam_gna_col(stop, g_collector, cell):
 	j=-1
 	for seg in cell.main_shaft:
 		j+=1
 		cell.parent.connect(seg)
 		for i in range(1,stop*10+1,1):
 			set_ELen(cell.side1, i/10, 0.1)
-			set_ELen(cell.side2,i/10,0.1)
 			cell._normalize()
 			g_collector[j][i-1] *= fullsearch(10)
 	print(f"successfully retrieved gna thresh")
@@ -83,10 +77,10 @@ def diam_gna_col(min, max, d_dim, g_collector, cell):
 		j+=1
 		cell.parent.connect(seg)
 		for i in range(min,max,d_dim):
-			cell.side1.diam = cell.side2.diam = i/10
+			cell.side1.diam = i/10
 			cell._normalize()
 			g_collector[j][i-1] *= fullsearch(10)
-			print(f"{j},{i-1}: {cell.side1.diam}")
+			#print(f"{j},{i-1}: {cell.side1.diam}")
 	print(f"successfully found gna")
 
 
@@ -94,11 +88,10 @@ def diam_gna_col(min, max, d_dim, g_collector, cell):
 def lamb_col_partial(min, max, r_list, g_list, cell, rec_loc):
 	for i in range(min*10, max*10+1, 1):
 		set_ELen(cell.side1, i / 10, 0.1)
-		set_ELen(cell.side2, i / 10, 0.1)
 		cell._normalize()
 		r_list.append(imped(rec_loc))
 		g_list.append(fullsearch(10))
-		print(cell.side1.L)
+		#print(cell.side1.L)
 	print(f"collected isolated resistances at {rec_loc} and gna_thresh")
 
 def plot(size_x, size_y,matx, xlabel, ylabel, zlabel, title):
@@ -128,10 +121,8 @@ def fullsearch(nsteps):
 		# print(search.a)
 	return search.a
 
-m = Resist_cell_2d(0)
+m = Resist_cell_1b(0)
 m.prop_site.connect(m.main_shaft(1))
-m.parent.L = 118
-m.side1.L = 118
 stim = h.IClamp(m.side1(0.9))
 stim.amp = 200 #nA
 stim.dur = 5 #ms
