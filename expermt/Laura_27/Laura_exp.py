@@ -85,8 +85,14 @@ def imped(loc):
     stim.dur = 51
     stim.delay = 5
     h.finitialize(-70)
-    h.continuerun(55)
-    return loc.v / stim.amp
+    h.continuerun(25)
+    return loc.v/200
+
+def rin(sec):
+		zz = h.Impedance()
+		zz.loc(sec)
+		zz.compute(0)
+		return zz.input(sec)
 
 def experiment_resist(d1, d2, l1, l2, loc):
     global stim,b_p,b_s
@@ -99,14 +105,46 @@ def experiment_resist(d1, d2, l1, l2, loc):
         b_s = h.Section(name = "side"      ,cell = m)
         kin.insmod_Traub(b_s        , "axon")
     if stim is None:
+        pass
+        # stim = h.IClamp(b_p(1))
+        # stim.amp = 200
+        # stim.dur = 21 #5/16
+        # stim.delay = 5
+    disconnect()
+    m.newbranch( (l1+ __PAR_ADD_LAM__) * __BRAN_LAM__, d1, new= b_p)
+    m.newbranch(l2 * __BRAN_LAM__, d2, new= b_s)
+    for sec in m.all:
+            if sec is not m.soma:
+                if sec is not m.IS:
+                    sec.gbar_nafTraub = 0
+                    sec.gbar_kdrTraub = 0
+    ret = (imped(loc))
+    return ret
+
+def experiment_resist2(d1, d2, l1, l2, loc):
+    global stim,b_p,b_s
+    assert h.dt == pow(2,-8)
+    assert m.dx == pow(2,-5)
+    if b_p is None:
+        b_p = h.Section(name = "parent"    ,cell = m)
+        kin.insmod_Traub(b_p        , "axon")
+    if b_s is None:
+        b_s = h.Section(name = "side"      ,cell = m)
+        kin.insmod_Traub(b_s        , "axon")
+    if stim is None:
         stim = h.IClamp(b_p(1))
         stim.amp = 200
-        stim.dur = 5/16
+        stim.dur = 21 #5/16
         stim.delay = 5
     disconnect()
     m.newbranch( (l1+ __PAR_ADD_LAM__) * __BRAN_LAM__, d1, new= b_p)
     m.newbranch(l2 * __BRAN_LAM__, d2, new= b_s)
-    ret = (imped(loc))
+    for sec in m.all:
+            if sec is not m.soma:
+                if sec is not m.IS:
+                    sec.gbar_nafTraub = 0
+                    sec.gbar_kdrTraub = 0
+    ret = (rin(loc))
     return ret
 
 def disconnect():
@@ -156,9 +194,10 @@ def both(simcnt, loc, steps = 12, plt=1, print=1, **kwargs):
     m.dx = pow(2,-5)
     joint = np.hstack((dists, lengs))
     resist_list = [experiment_resist(*row, loc) for row in joint]
+    resist_list2 = [experiment_resist2(*row, loc) for row in joint]
     gna_list = [experiment(*row, steps = steps) for row in joint]
     if plt ==1:
-        plot(resist_list, gna_list, 'Rin', 'gna')
+        plot(resist_list, gna_list, 'imped', resist_list2, gna_list, 'rin', 'Rin', 'gna')
     if plt == 0:
         pass
     if print ==1:
@@ -175,9 +214,11 @@ def dryrun(simcnt, **kwargs):
 
     return np.hstack((dists,lengs))
 
-def plot(x,y, xlab, ylab):
-    plt.plot(x,y,'o')
+def plot(x,y, llab, x2, y2, llab2, xlab, ylab):
+    plt.plot(x,y,'o', label = llab)
+    plt.plot(x2, y2, 'o', label = llab2)
     plt.xlabel(xlab)
     plt.ylabel(ylab)
+    plt.legend()
     plt.grid()
     plt.show()
