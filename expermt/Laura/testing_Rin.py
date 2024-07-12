@@ -114,29 +114,3 @@ def stim_ste(loc):
 def run():
 	h.finitialize(-69)
 	h.continuerun(100)
-#
-#
-# list1 = ir_list_prox_par = []
-# list2 = ir_list_dist_par = []
-# list3 = ir_list_dist_side = []
-#
-#
-# for i in range(1, 301):
-# 	m.side1.L = m.side2.L = i
-# 	list1.append(resist_in(m.parent(0)))
-# 	list2.append(resist_in(m.parent(1)))
-# 	list3.append(resist_in(m.side1(1)))
-#
-# print("input resistances collected")
-
-# def plot(list1 = ir_list_prox_par, list2 = ir_list_dist_par, list3 = ir_list_dist_side):
-# 	plt.plot(list1, label="prox parent")
-# 	plt.plot(list2, label="dist parent")
-# 	plt.plot(list3, label="dist side")
-# 	plt.xlabel("length of side branches")
-# 	plt.ylabel("input resistance")
-# 	plt.title("input resistance with varying side branch lengths")
-# 	plt.legend()
-# 	plt.grid()
-# 	plt.show()
-
