@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm as cmap
 from neuron import h
-from expermt.Laura_27.testing_Rin import Resist_cell_2d, Resist_cell_1b
+from expermt.Laura.testing_Rin import Resist_cell_2d, Resist_cell_1b
 from cells.adoptedeq import elength
 import cells.adoptedeq as gnat
 from tools.aprecorder import APRecorder
