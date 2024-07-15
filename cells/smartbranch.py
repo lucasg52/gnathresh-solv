@@ -17,8 +17,10 @@ class LambdaSec():
 class SmartShaft():
     """unimplemented"""
     #give it a dx
-    def __init__(self):
+    def __init__(self,cell):
+        self.cell = cell
         self.shaftlist = []
+        self.shaftcnt = 0
     def measureto(self, dist):
         totaldist = dist
         for i, sec in enumerate(self.shaftlist):
@@ -31,10 +33,12 @@ class SmartShaft():
         #if dist == sec.L:
         #    return sec
         parent = sec.parentseg()
-        new = h.Section()
+        new = h.Section(name = f"shaft[{self.shaftcnt}]", cell = self.cell)
+        self.shaftcnt += 1
         new.diam = sec.diam
         new.L = dist
         new.connect(parent)
+        sec.disconnect()
         sec.connect(new(1)) 
         sec.L -= dist
         return new
@@ -53,6 +57,7 @@ class SmartShaft():
         parent = sec.parentseg()
         sec.disconnect()
         mergesec.L += sec.L
+        mergesec.disconnect()
         mergesec.connect(parent)
         self.shaftlist.pop(i)
         h.delete_section(sec = sec)
@@ -80,7 +85,7 @@ class SmartBranchCell(BaseExpCell):
             ):
         super().__init__(dx, ratio, gid = gid, layer = layer)
         self.shaftlist  = [self.main_shaft]
-        self.shaft = SmartShaft()
+        self.shaft = SmartShaft(cell = self)
         self.shaft.shaftlist = self.shaftlist
         self.branchcnt = 0
         self.branchlist = []
