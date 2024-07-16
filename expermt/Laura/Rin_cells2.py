@@ -144,7 +144,8 @@ def imped(part):
 	imp_geter.compute(0)
 	return imp_geter.input(part)
 
-# def my_imped(part, m=m, n=n):
+
+# def my_imped(part):
 # 	for seg in part.wholetree():
 # 		if part == m.side1:
 # 			m.setgna(0)
