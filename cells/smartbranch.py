@@ -1,19 +1,19 @@
 from  neuron import h
-from .adoptedeq import elength, normalize_dlambda
+from .adoptedeq import  normalize_dlambda
 from .base import BaseExpCell
 from . import kinetics as kin
 from math import ulp as __ulp__
-
-class LambdaSec():
-    # bad idea for a class, will likely slow down all large scale experiments even if done correctly
-    def __init__(self, *args, **kwargs):
-        self.sec = h.Section(*args, **kwargs)
-    def _get_L(self):
-        return self.sec.L / elength(self.sec)
-    def _set_L(self, newL):
-        diffL = newL - self._get_L()
-
-
+#
+#class LambdaSec():
+#    # bad idea for a class, will likely slow down all large scale experiments even if done correctly
+#    def __init__(self, *args, **kwargs):
+#        self.sec = h.Section(*args, **kwargs)
+#    def _get_L(self):
+#        return self.sec.L / elength(self.sec)
+#    def _set_L(self, newL):
+#        diffL = newL - self._get_L()
+#
+#
 class SmartShaft():
     """unimplemented"""
     #give it a dx
@@ -72,6 +72,10 @@ class SmartShaft():
             print(f"gnatsolv.cells.smartbranch.SmartShaft: WARNING: attempted to insert a branch very close to, or at already existing branchpoint: sec: {splitsec} dist: {splitdist}")
         newsec = self.split(splitsec, splitdist) 
         self.shaftlist.insert(i, newsec)
+
+        #normalize_dlambda(newsec, self.cell.dx)
+        #normalize_dlambda(splitsec, self.cell.dx)
+        
         return i, newsec
 
 class SmartBranchCell(BaseExpCell):
@@ -98,13 +102,17 @@ class SmartBranchCell(BaseExpCell):
         self.branchcnt += 1
         new.L = L
         new.diam = diam
+        normalize_dlambda(new, self.dx)
         self.branchlist.append(new)
         #   make sure the new section has traub shit
         i ,parsec = self.shaft.insert(dist)
         kin.insmod_Traub(parsec     , "axon")
         new.connect(parsec(1))
-        self.all = self.soma.wholetree()
-        self._normalize() #needs to be removed
+        normalize_dlambda(parsec, self.dx)
+        normalize_dlambda(self.shaftlist[i+1], self.dx) # normalize the section that gets split too
+        
+        #self.all = self.soma.wholetree()
+        #self._normalize() #needs to be removed
     def rmbranch(self, ind):
         if isinstance(ind,int):
             branch = self.branchlist[ind]
