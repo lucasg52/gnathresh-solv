@@ -32,6 +32,8 @@ class Rin_cell_1(BaseExpCell):
 	def _setup_morph(self):
 		super()._setup_morph()
 		self.IS.diam = self.IS_diam
+		self.prop_site.L = 2*elength(self.prop_site)
+		self.main_shaft.L = 4*elength(self.main_shaft)
 
 	def _setup_bioph(self):
 		super()._setup_bioph()
@@ -72,7 +74,7 @@ class Rin_cell_1y(BaseExpCell):
 
 		self.stim_b.diam = 0.2
 		self.side1.diam = 0.2
-		self.dau1.diam = self.dau2.diam = 0.215
+		self.dau1.diam = self.dau2.diam = 0.215443469
 		self.stim_b.L = 400
 		self.side1.L = 300
 		self.dau1.L = 300
@@ -91,6 +93,8 @@ class Rin_cell_1y(BaseExpCell):
 	def _setup_morph(self):
 		super()._setup_morph()
 		self.IS.diam = self.IS_diam
+		self.prop_site.L = 2*elength(self.prop_site)
+		self.main_shaft.L = 4*elength(self.main_shaft)
 
 	def _setup_bioph(self):
 		super()._setup_bioph()
@@ -140,14 +144,19 @@ def imped(part):
 	imp_geter.compute(0)
 	return imp_geter.input(part)
 
-def my_imped(part):
-	stim = h.IClamp(part)
-	stim.amp = 200
-	stim.dur = 51
-	stim.delay = 5
-	h.finitialize(-70)
-	h.continuerun(55)
-	return part.v / stim.amp
+# def my_imped(part, m=m, n=n):
+# 	for seg in part.wholetree():
+# 		if part == m.side1:
+# 			m.setgna(0)
+# 		if part == n.side1:
+# 			n.setgna(0)
+# 	stim = h.IClamp(part(0))
+# 	stim.amp = 200
+# 	stim.dur = 51
+# 	stim.delay = 5
+# 	h.finitialize(-70)
+# 	h.continuerun(55)
+# 	return part.v / stim.amp
 
 
 # def resist_in(sec):

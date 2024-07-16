@@ -1,9 +1,14 @@
-from expermt.Laura.Rin_cells2 import Rin_cell_1, Rin_cell_1y, setting_lengths, imped, my_imped
+import numpy as np
+
+from expermt.Laura.Rin_cells2 import Rin_cell_1, Rin_cell_1y
 from solver.searchclasses import BinSearch
 from tools.aprecorder import APRecorder
 from cells.adoptedeq import elength
 import cells.adoptedeq as gnat
 from neuron import h
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import cm as cmap
 h.load_file("stdrun.hoc")
 def ngui():
     from neuron import gui
@@ -86,19 +91,98 @@ stim2.dur = 5/16
 
 h.dt = pow(2,-5)
 
+rin_base = []
+rin_eqi = []
+gna_base = []
+gna_eqi = []
+lengths = [j/100 for j in range(5,200,5)]#np.linspace(0.05, 2, 0.05)
+
+def reset():
+    rin_base = []
+    rin_eqi = []
+    gna_base = []
+    gna_eqi = []
+
+def Rin(part):
+	imp_geter = h.Impedance()
+	imp_geter.loc(part(0))
+	imp_geter.compute(0)
+	return imp_geter.input(part(0))
+
+def my_imped(part):
+    h.dt = 0.5
+    if part == m.side1:
+        m.side1.gbar_nafTraub = 0
+        m.side1.gbar_kdrTraub =0
+    if part == n.side1:
+        n.side1.gbar_nafTraub = 0
+        n.side1.gbar_kdrTraub =0
+        n.dau1.gbar_nafTraub = 0
+        n.dau1.gbar_kdrTraub =0
+        n.dau2.gbar_nafTraub = 0
+        n.dau2.gbar_kdrTraub =0
+
+    stim = h.IClamp(part(0))
+    stim.amp = 200
+    stim.dur = 100
+    stim.delay = 5
+    h.finitialize(-70)
+    h.continuerun(100)
+    stim.amp=0
+    return part(0).v / 200
+    
 def run(stim_len, dau_len):
-    setting_length(stim_len,dau_len)
-    m.all = m.soma.wholetree()
-    n.all = n.soma.wholetree()
-    m._normalize()
-    n._normalize()
-    m.side1.disconnect()
-    n.side1.disconnect()
-    print(f"base cell: R_in = {my_imped(m.side1(0))}")
-    print(f"equiv: R_in = {my_imped(n.side1(0))}")
-    m.side1.connect(m.main_shaft(0.5))
-    n.side1.connect(n.main_shaft(0.5))
-    m.all = m.soma.wholetree()
-    n.all = n.soma.wholetree()
-    print(f"base cell: gna = {fullsolve_m(53)}")
-    print(f"equiv: gna = {fullsolve_n(53)}")
+    for i in lengths:
+        setting_length(stim_len,i)
+        m.all = m.soma.wholetree()
+        n.all = n.soma.wholetree()
+        m._normalize()
+        n._normalize()
+        m.side1.disconnect()
+        n.side1.disconnect()
+        # print(f"base cell: R_in = {my_imped(m.side1(0))}")
+        print(m.side1.L/118, n.side1.L/118)
+        rin_base.append(Rin(m.side1))#my_imped(m.side1))
+        # print(f"equiv: R_in = {my_imped(n.side1(0))}")
+        rin_eqi.append(Rin(n.side1))#my_imped(n.side1))
+
+        m.side1.connect(m.main_shaft(0.5))
+        n.side1.connect(n.main_shaft(0.5))
+        m.all = m.soma.wholetree()
+        n.all = n.soma.wholetree()
+        h.dt= pow(2,-5)
+        # print(f"base cell: gna = {fullsolve_m(53)}")
+        gna_base.append(fullsolve_m(40))
+        # print(f"equiv: gna = {fullsolve_n(53)}")
+        gna_eqi.append(fullsolve_n(40))
+
+
+
+    # fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8, 4))
+    # ax = fig.add_subplot(projection='3d')
+    # x = [i/10 for i in range(0, dau_len*10, 1)]
+    # x0 = np.meshgrid(x,x)
+    # x_base, y_base = np.meshgrid(x, rin_base)
+    # z_base = np.meshgrid(x, gna_base)
+    # ax.plot_surface(x_base, y_base, z_base, alpha=0.5, cmap=cmap.viridis, label='base call')
+    # ax.plot_surface(x, rin_eqi, gna_eqi, alpha=0.5, cmap=cmap.rdpu, label = "equiv cell")
+    # ax.set_xlabel("length in lambda")  # 'length of side branches in lambda'
+    # ax.set_ylabel("Rin in mV/nA")  # 'node along main shaft')
+    # ax.set_zlabel("Gna thresh")  # 'input resistance')
+    # ax.set_title("Rin vs Gna based on varying side branch lengths")
+    # ax.legend()
+
+    fig, ax = plt.subplots(nrows=2, ncols=1,figsize=(8,4))
+    ax[0].plot(lengths,rin_base, label="Rin for base cell")
+    ax[0].plot(lengths,rin_eqi, label="Rin for eqi cell")
+    ax[1].plot(lengths,gna_base, label=f"Gna for base cell; control")
+    ax[1].plot(lengths,gna_eqi, label="Gna for eqi cell")
+    ax[0].grid()
+    ax[1].grid()
+    ax[1].legend()
+    ax[0].legend()
+    ax[1].set_xlabel("length in lambda")  # 'length of side branches in lambda'
+    ax[0].set_ylabel("Rin in mV/nA")  # 'node along main shaft')
+    ax[1].set_ylabel("Gna thresh")  # 'input resistance')
+    ax[0].set_title("Rin vs Gna based on varying side branch lengths")
+    plt.show()
