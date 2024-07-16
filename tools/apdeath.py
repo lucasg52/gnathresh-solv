@@ -18,7 +18,7 @@ class DeathTester(APRecorder):
             if sec.parentseg() is None:
                 continue
             if sec.parentseg().sec in self.tree:
-                self.nodes.append(sec(1))
+                self.nodes.append(h.DeathRec(sec(1)))
     def proptest(self):
         for i in range(self.maxsteps):
             superret = super().proptest()
@@ -26,7 +26,7 @@ class DeathTester(APRecorder):
                 if self.lifetest():             # we are still alive
                     h.continuerun(h.t + self.interval) 
                 else:                           # not propogating and we dead a hell
-                    self.deathtime = h.t
+                    self.deathtime = max([n.deatht for n in self.nodes])
                     break
             else:
                 self.proptime = self.recorded[0]
@@ -45,7 +45,8 @@ class DeathTester(APRecorder):
     def lifetest(self):
         """returns true if there are any nodes where the AP is still alive"""
         for n in self.nodes:
-            if n.v > self.threshold:
+            #if n.v > self.threshold:
+            if n.deatht == 0:
                 return True
         return False
 
