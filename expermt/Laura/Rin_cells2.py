@@ -176,3 +176,61 @@ def imped(part):
 # def run():
 # 	h.finitialize(-69)
 # 	h.continuerun(100)
+
+class Rin_cell_3y(BaseExpCell):
+	def __init__(self, gid):
+		self.gid = gid
+
+		self.stim_b = h.Section("stim_b", self)
+		self.side1 = h.Section("side1", self)
+		self.dau1 = h.Section("dau1", self)
+		self.dau2 = h.Section("dau2", self)
+		self.dau3 = h.Section("dau3", self)
+
+		self.stim_b.diam = 0.2
+		self.side1.diam = 0.2
+		self.dau1.diam = self.dau2.diam = self.dau3.diam=0.164414383
+		self.stim_b.L = 400
+		self.side1.L = self.dau1.L=self.dau2.L = self.dau3.L = 300
+
+		super().__init__(0.2,3,gid)
+
+	def _connect(self):
+		super()._connect()
+		self.stim_b.connect(self.main_shaft(0.3))
+		self.dau1.connect(self.side1(1))
+		self.dau2.connect(self.side1(1))
+		self.dau3.connect(self.side1(1))
+		self.prop_site.connect(self.main_shaft(1))
+		self.side1.connect(self.main_shaft(0.6))
+
+	def _setup_morph(self):
+		super()._setup_morph()
+		self.IS.diam = self.IS_diam
+		self.prop_site.L = 2*elength(self.prop_site)
+		self.main_shaft.L = 4*elength(self.main_shaft)
+
+	def _setup_bioph(self):
+		super()._setup_bioph()
+		self.all = self.soma.wholetree()
+		for sec in [self.stim_b, self.side1, self.dau1, self.dau2, self.dau3, self.main_shaft, self.IS, self.prop_site]:
+			kinetics.insmod_Traub(sec, "axon")
+		kinetics.insmod_Traub(self.soma, "soma")
+
+	def setgna(self, gna):
+		for sec in self.soma.wholetree():
+			if sec is not self.soma:
+				if sec is not self.IS:
+					sec.gbar_nafTraub = gna
+					sec.gbar_kdrTraub = gna
+
+	def getgna(self):
+		gna = self.main_shaft.gbar_nafTraub
+		for sec in self.soma.wholetree():
+			if sec is not self.soma:
+				if sec is not self.IS:
+					assert(sec.gbar_nafTraub == gna)
+		return gna
+
+	def __repr__(self):
+		return f"Resist[{self.gid}]"

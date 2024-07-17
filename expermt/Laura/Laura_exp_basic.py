@@ -159,7 +159,7 @@ def run(stim_len, dau_len, rin_solver, title):
         m.side1.disconnect()
         n.side1.disconnect()
         # print(f"base cell: R_in = {my_imped(m.side1(0))}")
-        print(m.side1.L/118.1, n.side1.L/118.1)
+        print(m.side1.L/118.84, n.side1.L/118.84)
         if rin_solver == Rin:
             rin_base.append(Rin(m.side1))#my_imped(m.side1))
         # print(f"equiv: R_in = {my_imped(n.side1(0))}")
