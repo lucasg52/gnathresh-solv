@@ -104,7 +104,7 @@ class SmartBranchCell(BaseExpCell):
         new.diam = diam
         normalize_dlambda(new, self.dx)
         self.branchlist.append(new)
-        #   make sure the new section has traub shit
+        #   make sure the new section has traub
         i ,parsec = self.shaft.insert(dist)
         kin.insmod_Traub(parsec     , "axon")
         new.connect(parsec(1))
