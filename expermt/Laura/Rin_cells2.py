@@ -21,7 +21,7 @@ class Rin_cell_1(BaseExpCell):
 		self.side1.L = 600
 
 
-		super().__init__(0.2,3,gid)
+		super().__init__(0.025,3,gid)
 
 	def _connect(self):
 		super()._connect()
