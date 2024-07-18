@@ -74,7 +74,7 @@ class ExpCell_notaper(BaseExpCell):
         return("ExpCell_notaper[{}]".format(self.gid) )
     def _setup_morph(self):
         super()._setup_morph()
-        self.IS.diam = self.IS_diam
+        self.IS.diam = self.IS_diam # ?
         self._normalize()
     def getgnabar(self):
         """
