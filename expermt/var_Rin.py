@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm as cmap
 from neuron import h
-from expermt.Laura.testing_Rin import Resist_cell_2d, Resist_cell_1b
+from expermt.Laura.Rin_cells_take1 import Resist_cell_2d, Resist_cell_1b
 from cells.adoptedeq import elength
 import cells.adoptedeq as gnat
 from tools.aprecorder import APRecorder
@@ -40,7 +40,7 @@ def lam_resist_col(stop, r_collector, cell, rec_place): #, g_collector, imp_solv
 			sec.gbar_kdrTraub = 0
 	for seg in cell.main_shaft:
 		j+=1
-		cell.parent.connect(seg)
+		cell.stim_b.connect(seg)
 		for i in range(1,stop*10+1,1):
 			set_ELen(cell.side1, i/10, 0.1)
 			set_ELen(cell.side2,i/10,0.1)
@@ -56,7 +56,7 @@ def lam_gna_col(stop, g_collector, cell): #imp_solver): #g_collector,
 	j=-1
 	for seg in cell.main_shaft:
 		j+=1
-		cell.parent.connect(seg)
+		cell.stim_b.connect(seg)
 		for i in range(1,stop*10+1,1):
 			set_ELen(cell.side1, i/10, 0.1)
 			set_ELen(cell.side2,i/10,0.1)
@@ -68,7 +68,7 @@ def diam_resist_col(min, max, d_dim, r_collector, cell, rec_place):
 	j=-1
 	for seg in cell.main_shaft:
 		j+=1
-		cell.parent.connect(seg)
+		cell.stim_b.connect(seg)
 		for i in range(min,max,d_dim):
 			cell.side1.diam = cell.side2.diam = i/10
 			cell._normalize()
@@ -81,7 +81,7 @@ def diam_gna_col(min, max, d_dim, g_collector, cell):
 	j=-1
 	for seg in cell.main_shaft:
 		j+=1
-		cell.parent.connect(seg)
+		cell.stim_b.connect(seg)
 		for i in range(min,max,d_dim):
 			cell.side1.diam = cell.side2.diam = i/10
 			cell._normalize()
@@ -130,7 +130,7 @@ def fullsearch(nsteps):
 
 m = Resist_cell_2d(0)
 m.prop_site.connect(m.main_shaft(1))
-m.parent.L = 118
+m.stim_b.L = 118
 m.side1.L = 118
 stim = h.IClamp(m.side1(0.9))
 stim.amp = 200 #nA
