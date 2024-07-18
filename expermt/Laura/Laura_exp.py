@@ -24,11 +24,13 @@ __MAXLAM__ = 3
 __PAR_ADD_LAM__ = 2
 __MAXGBAR__ = 0.45
 h.load_file("stdrun.hoc")
+
 def ngui():
     from neuron import gui
     print(gui)
-def check_dlamb(sec, dx):
-    return (sec.L/(eq.elength(sec)*dx), sec.nseg)
+# def check_dlamb(sec, dx):
+#     return (sec.L/(eq.elength(sec)*dx), sec.nseg)
+
 def set_gbar(m, gbar):
     for sec in m.all:
         if sec is not m.soma:
@@ -84,9 +86,12 @@ def imped(loc):
     stim.amp = 200
     stim.dur = 51
     stim.delay = 5
+    temp_dt = float(h.dt)
+    h.dt=1
     h.finitialize(-70)
-    h.continuerun(25)
-    return loc.v/200
+    h.continuerun(55)
+    h.dt = temp_dt
+    return loc.v/stim.amp
 
 def rin(sec):
 		zz = h.Impedance()
@@ -201,7 +206,7 @@ def both(simcnt, loc, steps = 12, plt=1, print=1, **kwargs):
     if plt == 0:
         pass
     if print ==1:
-        return resist_list, gna_list, joint
+        return resist_list, resist_list2, gna_list, joint
     if print == 0:
         pass
     return

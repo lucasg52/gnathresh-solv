@@ -26,7 +26,7 @@ def diam_lam_resist_col(min, max, d_dim, r_collector,g_collector, cell, rec_plac
     k=0
     l = 0
 	for seg in cell.main_shaft:
-		cell.parent.connect(seg)
+		cell.stim_b.connect(seg)
 		for i in range(min,max,d_dim):
 			cell.side1.diam = cell.side2.diam = i/10
 			cell._normalize()

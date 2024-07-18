@@ -62,6 +62,10 @@ class BaseExpCell(ABC):
         self.prop_site = h.Section(     name = "prop_site"  ,cell = self )
 
         self.main_length = 8 # // electronic length of main shaft
+        self.main_diam = 1.2,
+        self.IS_diam = 2,
+        self.s_ratio = 11.4,
+        self.ell_c = 0.0
         for k, v in layerdict["layer" + str(layer)].items():
             setattr(self, k, v)
 
