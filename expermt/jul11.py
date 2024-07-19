@@ -4,6 +4,8 @@ from ..cells.tapertypes import ExpCell_notaper
 from ..solver import searchclasses
 from ..solver.deathsolve import SegDeathSolver
 import matplotlib.pyplot as plt
+import numpy as np
+print(plt)
 h.load_file("stdrun.hoc")
 h.dt = pow(2,-7)
 
@@ -19,6 +21,7 @@ mydeath = h.DeathRec(m.main_shaft(0.3))
 m._setup_exp()
 def ngui():
     from neuron import gui
+    print(gui)
 def setg(g):
     m.setgnabar(g)
     m.setgkbar(g)
@@ -56,4 +59,14 @@ def fullsolve(steps = 12, a = 0.5, err = 0.5):
     for i in range(steps):
             osearch.searchstep()
     return osearch.a
+
+def gengraphdata(glo, ghi, n = 256):
+    global g_gdata, g_tdata, g_fun
+    assert glo < ghi
+    g_gdata = np.linspace(glo, ghi, n)
+    g_tdata = [g_fun(g) for g in g_gdata]
+
+def genplot():
+    plt.plot(g_gdata, g_tdata)
+    plt.show()
 
