@@ -3,9 +3,13 @@ from neuron import h
 from cells import kinetics
 from cells.adoptedeq import elength
 import cells.adoptedeq as gnat
+from tools.aprecorder import APRecorder
+from solver.searchclasses import ExpandingSearch
+import time
+import math
 h.load_file("stdrun.hoc")
 
-
+__tstop__ = h.tstop = 15
 class Rin_cell_1(BaseExpCell):
 	def __init__(self, gid):
 		self.gid = gid
@@ -20,6 +24,8 @@ class Rin_cell_1(BaseExpCell):
 		self.stim_b.L = 400
 		self.side1.L = 600
 
+		self.rin_base = []
+		self.gna_base = []
 
 		super().__init__(0.025,3,gid)
 
@@ -57,11 +63,63 @@ class Rin_cell_1(BaseExpCell):
 					assert(sec.gbar_nafTraub == gna)
 		return gna
 
+	def stim_setup(self, loc):
+		self.stim = h.IClamp(self.stim_b(loc))
+		self.stim.amp = 200
+		self.stim.delay = 5
+		self.stim.dur = 5/16
+		self.rec = APRecorder(self.prop_site)
+
+	def proptest(self, gbar):
+		self.setgna(gbar)
+		h.finitialize(-69)
+		h.continuerun(__tstop__)
+		return self.rec.proptest()
+
+	def fullsolve(self, a, err=2e-3, acc=pow(2, -30), maxsteps=45, tstop_init=None):
+		global __ERRFLAG__
+		ptstart = time.process_time()
+		if tstop_init is None:
+			__tstop__ = self.stim.delay + 10
+		else:
+			__tstop__ = tstop_init
+		search = ExpandingSearch(a - err, a + err, self.proptest, lim_lo=0, lim_hi=0.45)
+		for i in range(maxsteps):
+			if search.searchstep():
+				break
+			if self.rec.proptest():
+				if self.rec.recorded[0] > __tstop__ - 6:
+					__tstop__ += 3
+					print(__tstop__)
+			if search.hi - search.lo <= acc:
+				break
+		print(time.process_time() - ptstart)
+		if i == maxsteps - 1:
+			print("WARNING!!! U REACHED THE MAX STEPS!!")
+		if abs(search.a - a) > 4 * err:
+			__ERRFLAG__ = abs(search.a - a)
+		return search.a
+
+	def Rin(self, sec):
+		imp_geter = h.Impedance()
+		imp_geter.loc(sec)
+		imp_geter.compute(0)
+		return imp_geter.input(sec)
+
+	def alt_Rin(self, loc):
+		h.dt = 0.5
+		self.side1.gbar_nafTraub = 0
+		self.side1.gbar_kdrTraub = 0
+		stim = h.IClamp(loc)
+		stim.amp = 200
+		stim.dur = 100
+		stim.delay = 5
+		h.finitialize(-70)
+		h.continuerun(100)
+		return loc.v/stim.amp
+
 	def __repr__(self):
 		return f"Resist[{self.gid}]"
-
-
-
 
 class Rin_cell_1y(BaseExpCell):
 	def __init__(self, gid):
@@ -81,6 +139,9 @@ class Rin_cell_1y(BaseExpCell):
 		self.dau2.L = 300
 
 		super().__init__(0.2,3,gid)
+
+		self.rin_eqi = []
+		self.gna_eqi = []
 
 	def _connect(self):
 		super()._connect()
@@ -118,64 +179,81 @@ class Rin_cell_1y(BaseExpCell):
 					assert(sec.gbar_nafTraub == gna)
 		return gna
 
+	def stim_setup(self, loc):
+		self.stim = h.IClamp(self.stim_b(loc))
+		self.stim.amp = 200
+		self.stim.delay = 5
+		self.stim.dur = 5/16
+		self.rec = APRecorder(self.prop_site)
+
+	def proptest(self, gbar):
+		self.setgna(gbar)
+		h.finitialize(-69)
+		h.continuerun(__tstop__)
+		return self.rec.proptest()
+
+	def fullsolve(self, a, err=2e-3, acc=pow(2, -30), maxsteps=45, tstop_init=None):
+		global __ERRFLAG__
+		ptstart = time.process_time()
+		if tstop_init is None:
+			__tstop__ = self.stim.delay + 10
+		else:
+			__tstop__ = tstop_init
+		search = ExpandingSearch(a - err, a + err, self.proptest, lim_lo=0, lim_hi=0.45)
+		for i in range(maxsteps):
+			if search.searchstep():
+				break
+			if self.rec.proptest():
+				if self.rec.recorded[0] > __tstop__ - 6:
+					__tstop__ += 3
+					print(__tstop__)
+			if search.hi - search.lo <= acc:
+				break
+		print(time.process_time() - ptstart)
+		if i == maxsteps - 1:
+			print("WARNING!!! U REACHED THE MAX STEPS!!")
+		if abs(search.a - a) > 4 * err:
+			__ERRFLAG__ = abs(search.a - a)
+		return search.a
+
+	def Rin(self, sec):
+		imp_geter = h.Impedance()
+		imp_geter.loc(sec)
+		imp_geter.compute(0)
+		return imp_geter.input(sec)
+
+	def alt_Rin(self, loc):
+		h.dt = 0.5
+		side = self.side1.wholetree()
+		for sec in [self.side1, self.dau1, self.dau2]:
+			sec.gbar_nafTraub = 0
+			sec.gbar_kdrTraub = 0
+		stim = h.IClamp(loc)
+		stim.amp = 200
+		stim.dur = 100
+		stim.delay = 5
+		h.finitialize(-70)
+		h.continuerun(100)
+		return loc.v/stim.amp
+
 	def __repr__(self):
-		return f"Resist[{self.gid}]"
+		return f"Cell_2y[{self.gid}]"
 
-
-def set_ELen(section, length, dx):
-	Lambda = elength(section)
-	section.L = length * Lambda
-	gnat.normalize_dlambda(section, dx)
-	return
-
-def setting_lengths(m, n):
-	m.stim_b.L = set_ELen(m.stim_b, 4, 0.1)
-	n.stim_b.L = set_ELen(n.stim_b, 4, 0.1)
-
-	m.side1.L = set_ELen(m.side1, 6, 0.1)
-	n.side1.L = set_ELen(n.side1, 3, 0.1)
-
-	n.dau1.L = set_ELen(n.dau1, 3, 0.1)
-	m.dau1.L = set_ELen(n.dau2, 3, 0.1)
-
-def imped(part):
-	imp_geter = h.Impedance()
-	imp_geter.loc(part)
-	imp_geter.compute(0)
-	return imp_geter.input(part)
-
-
-# def my_imped(part):
-# 	for seg in part.wholetree():
-# 		if part == m.side1:
-# 			m.setgna(0)
-# 		if part == n.side1:
-# 			n.setgna(0)
-# 	stim = h.IClamp(part(0))
-# 	stim.amp = 200
-# 	stim.dur = 51
-# 	stim.delay = 5
-# 	h.finitialize(-70)
-# 	h.continuerun(55)
-# 	return part.v / stim.amp
-
-
-# def resist_in(sec):
-# 		zz = h.Impedance()
-# 		zz.loc(sec)
-# 		zz.compute(0)
-# 		return zz.input(sec)
+# def set_ELen(section, length, dx):
+# 	Lambda = elength(section)
+# 	section.L = length * Lambda
+# 	gnat.normalize_dlambda(section, dx)
+# 	return
 #
-# # m = Resist_cell(0)
-# def stim_ste(loc):
-# 	stim = h.IClamp(loc)
-# 	stim.delay = 5
-# 	stim.dur = 0.3125
-# 	stim.amp = 200
+# def setting_lengths(m, n):
+# 	m.stim_b.L = set_ELen(m.stim_b, 4, 0.1)
+# 	n.stim_b.L = set_ELen(n.stim_b, 4, 0.1)
 #
-# def run():
-# 	h.finitialize(-69)
-# 	h.continuerun(100)
+# 	m.side1.L = set_ELen(m.side1, 6, 0.1)
+# 	n.side1.L = set_ELen(n.side1, 3, 0.1)
+#
+# 	n.dau1.L = set_ELen(n.dau1, 3, 0.1)
+# 	m.dau1.L = set_ELen(n.dau2, 3, 0.1)#
 
 class Rin_cell_3y(BaseExpCell):
 	def __init__(self, gid):
@@ -194,6 +272,9 @@ class Rin_cell_3y(BaseExpCell):
 		self.side1.L = self.dau1.L=self.dau2.L = self.dau3.L = 300
 
 		super().__init__(0.2,3,gid)
+
+		self.rin_eqi2 = []
+		self.gna_eqi2 = []
 
 	def _connect(self):
 		super()._connect()
@@ -232,5 +313,103 @@ class Rin_cell_3y(BaseExpCell):
 					assert(sec.gbar_nafTraub == gna)
 		return gna
 
+	def stim_setup(self, loc):
+		self.stim = h.IClamp(self.stim_b(loc))
+		self.stim.amp = 200
+		self.stim.delay = 5
+		self.stim.dur = 5/16
+		self.rec = APRecorder(self.prop_site)
+
+	def proptest(self, gbar):
+		self.setgna(gbar)
+		h.finitialize(-69)
+		h.continuerun(__tstop__)
+		return self.rec.proptest()
+
+	def fullsolve(self, a, err=2e-3, acc=pow(2, -30), maxsteps=45, tstop_init=None):
+		global __ERRFLAG__
+		ptstart = time.process_time()
+		if tstop_init is None:
+			__tstop__ = self.stim.delay + 10
+		else:
+			__tstop__ = tstop_init
+		search = ExpandingSearch(a - err, a + err, self.proptest, lim_lo=0, lim_hi=0.45)
+		for i in range(maxsteps):
+			if search.searchstep():
+				break
+			if self.rec.proptest():
+				if self.rec.recorded[0] > __tstop__ - 6:
+					__tstop__ += 3
+					print(__tstop__)
+			if search.hi - search.lo <= acc:
+				break
+		print(time.process_time() - ptstart)
+		if i == maxsteps - 1:
+			print("WARNING!!! U REACHED THE MAX STEPS!!")
+		if abs(search.a - a) > 4 * err:
+			__ERRFLAG__ = abs(search.a - a)
+		return search.a
+
+	def Rin(self, sec):
+		getter = h.Impedance()
+		getter.loc(sec)
+		getter.compute(0)
+		return getter.input(sec)
+
+	def alt_Rin(self, loc):
+		h.dt = 0.5
+		side = self.side1.wholetree()
+		for sec in [self.side1, self.dau1, self.dau2, self.dau3]:
+			sec.gbar_nafTraub = 0
+			sec.gbar_kdrTraub = 0
+		stim = h.IClamp(loc)
+		stim.amp = 200
+		stim.dur = 100
+		stim.delay = 5
+		h.finitialize(-70)
+		h.continuerun(100)
+		return loc.v/stim.amp
+
 	def __repr__(self):
-		return f"Resist[{self.gid}]"
+		return f"Cell_3y[{self.gid}]"
+
+
+class sidebranch_type1:
+	def __init__(self,cell):
+		self.dau = h.section(name = "dau", cell = cell)
+		self.dau1 = h.section(name="dau", cell=cell)
+		self.dau1.conenct(self.dau(1))
+
+
+class AdjSearch(): # should change name to BinSearch ?
+    """
+    Sets up a binary search
+        lo, hi,           the assumed window (lower and upper bounds) in which the solution lies
+        propatest,        the function that will return True if propagation succeeds, False otherwise
+        a = math.nan,     optionally, a first guess can be provided (otherwise is the median between lo and hi)
+        stopcond = None   for use of fullsearch() . if left as None, will throw warning, and not iterate
+
+    """
+    def __init__(
+                 self,
+                 lo, hi,
+                 propatest,
+                 a = math.nan,
+                ):
+        self.lo = lo
+        self.hi = hi
+        self.term = False
+        self.propatest = propatest
+        if math.isnan(a):
+            self.a = (lo + hi) / 2
+
+    def searchstep(self):
+        """ Iterate the search
+        pass approximation (a) to propatest, if true is returned, assume approximation too high, if false, vise-versa.
+        Returns: None
+        """
+        if self.propatest(self.a):
+            self.hi = self.a
+        else:
+            self.lo = self.a
+        self.a = (self.lo + self.hi) / 2
