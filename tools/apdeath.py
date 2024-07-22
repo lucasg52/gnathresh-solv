@@ -1,13 +1,24 @@
 from .aprecorder import APRecorder
 from neuron import h
+
 class DeathTester(APRecorder):
-    def __init__(self, tree, tstop, *args, interval = 3, threshold = -50, maxsteps = 100, sync_tstop = True, **kwargs):
+    def __init__(
+            self,
+			tree,
+			tstop,
+			*args,
+			interval = 3,
+			threshold = -50,
+			maxsteps = 100,
+			sync_tstop = True,
+			**kwargs):
         super().__init__(*args, **kwargs)
         self.tree = tree
         self.sync_tstop = sync_tstop
         self.tstop = tstop
         self.interval = interval
         self.threshold = threshold
+        self.maxsteps = maxsteps
         self.dtime = self.dsteps = self.proptime = 0
         self._initnodes()
     def checkinterval(self):
@@ -26,13 +37,14 @@ class DeathTester(APRecorder):
                 if self.lifetest():             # we are still alive
                     h.continuerun(h.t + self.interval) 
                 else:                           # not propogating and we dead a hell
-                    self.deathtime = max([n.deatht for n in self.nodes])
+                    self.deathtime = max(n.deatht for n in self.nodes)
                     break
             else:
                 self.proptime = self.recorded[0]
                 self.dsteps = 0
                 return superret
         return 0
+
     proptest.__doc__ = APRecorder.proptest.__doc__ + "\nadditionally, continue running simulation until AP is dead"
     def calibrate(self):
         if self.dsteps:
@@ -41,7 +53,6 @@ class DeathTester(APRecorder):
             self.tstop = self.dtime + self.interval
         if self.proptime > self.tstop - self.interval:
             self.tstop  = self.proptime + self.interval
-
     def lifetest(self):
         """returns true if there are any nodes where the AP is still alive"""
         for n in self.nodes:
