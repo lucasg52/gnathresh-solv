@@ -62,6 +62,8 @@ class BaseExpCell(ABC):
         self.main_shaft = h.Section(    name = "main_shaft" ,cell = self )
         self.prop_site = h.Section(     name = "prop_site"  ,cell = self )
 
+        self._create_secs()
+
         self.main_length = 8 # // electronic length of main shaft
         self.main_diam = 1.2
         self.IS_diam = 2
@@ -73,6 +75,9 @@ class BaseExpCell(ABC):
         self.soma_diam = self.s_ratio*self.IS_diam
         self._setup_bioph()
         self._setup_morph()
+
+    def _create_secs(self):
+        pass
 
     def _setup_morph(self):
         """setup morphology by initializing diameters, then connecting the segments (see _connect), then normalizing dx"""
