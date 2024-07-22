@@ -1,8 +1,8 @@
+from math import ulp as __ulp__
 from  neuron import h
 from .adoptedeq import  normalize_dlambda
 from .base import BaseExpCell
 from . import kinetics as kin
-from math import ulp as __ulp__
 #
 #class LambdaSec():
 #    # bad idea for a class, will likely slow down all large scale experiments even if done correctly
