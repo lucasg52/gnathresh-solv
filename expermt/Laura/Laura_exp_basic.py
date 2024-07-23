@@ -1,4 +1,4 @@
-from expermt.Laura.Rin_cells2 import Rin_cell_1, Rin_cell_1y, Rin_cell_3y
+from cells.Rin_cells2 import Rin_cell_1, Rin_cell_1y, Rin_cell_3y
 from solver.searchclasses import BinSearch, ExpandingSearch
 from tools.aprecorder import APRecorder
 from cells.adoptedeq import elength
