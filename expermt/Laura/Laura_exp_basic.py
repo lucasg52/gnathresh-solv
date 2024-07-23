@@ -14,7 +14,7 @@ h.dt = pow(2,-7) + pow(2,-7)
 diff_list2, diff_list3, diff_lst4 = [], [], []
 def lengthS(start, stop, step):
      return [j / 100 for j in range(start, stop, step)]
-lengths = lengthS(10, 610, 10)
+lengths = lengthS(0, 610, 10)
 m = Rin_cell_1(0)
 m.stim_setup(1)
 m.stim_b.L = 4 * elength(m.stim_b)
@@ -31,6 +31,13 @@ l.stim_setup(1)
 gcells = [m,n,w, l]
 
 def setting_length(dau_len):
+    # if dau_len == 0:
+    #     m.side1.disconnect()
+    #     n.side1.disconnect()
+    #     l.side1.disconnect()
+    #     l.dau1.disconnect()
+    #     w.side1.disconnect()
+    # else:
     m.side1.L = dau_len*elength(m.side1)
     n.side1.L = (dau_len/2)*elength(n.side1)
     n.dau1.L = (dau_len / 2) * elength(n.dau1)
@@ -39,8 +46,8 @@ def setting_length(dau_len):
     w.dau1.L = (dau_len / 2) * elength(w.dau1)
     w.dau2.L = (dau_len / 2) * elength(w.dau2)
     w.dau3.L = (dau_len/2)*elength(w.dau3)
-    l.side1.L = (dau_len/2) * elength(l.side1)
-    l.dau1.L = (dau_len/2) * elength(l.dau1)
+    l.side1.L = (dau_len) * elength(l.side1)
+    l.dau1.L = (dau_len) * elength(l.dau1)
     all()
     n._normalize()
     m._normalize()
@@ -49,9 +56,7 @@ def setting_length(dau_len):
 
 def disconnect():
     for m in gcells:
-        m.side1.disconnect()
-    l.dau1.disconnect()
-
+        m.main_shaft.disconnect()
 def all():
     for m in gcells:
         m.all = m.soma.wholetree()
@@ -60,16 +65,20 @@ def run(rin_solver):
     start_all = time.perf_counter()
     for i in lengths:
         setting_length(i)
+        # if i==0:
+        #     print("base case")
+        #     m.side1.connect(m.main_shaft(0.6))
+        #     n.side1.connect(n.main_shaft(0.6))
+        #     l.side1.connect(l.main_shaft(0.6))
+        #     l.dau1.connect(l.main_shaft(0.6))
+        #     w.side1.connect(w.main_shaft(0.6))
         disconnect()
         if rin_solver == 1:
             for cell in gcells:
-                if cell is not l:
-                    cell.rin_lst.append(cell.Rin(cell.side1(0)))
-                else:
-                    cell.rin_lst.append(cell.Rin(cell.side1(0))*2)
-            diff_list2.append(m.Rin(m.side1(0))-(n.Rin(n.side1(0))))
-            diff_list3.append(m.Rin(m.side1(0))-(w.Rin(w.side1(0))))
-            diff_lst4.append(m.Rin(m.side1(0))-(l.Rin(l.side1(0))*2))
+                    cell.rin_lst.append(cell.Rin(cell.main_shaft(0.3)))
+            diff_list2.append(m.Rin(m.main_shaft(0.3))-(n.Rin(n.main_shaft(0.3))))
+            diff_list3.append(m.Rin(m.main_shaft(0.3))-(w.Rin(w.main_shaft(0.3))))
+            diff_lst4.append(m.Rin(m.main_shaft(0.3))-(l.Rin(l.main_shaft(0.3))))
         if rin_solver == 0:
             for cell in gcells:
                 cell.rin_lst.append(cell.alt_Rin(cell.main_shaft(0.3)))
@@ -80,19 +89,17 @@ def run(rin_solver):
         print(m.side1.L/118.84, n.side1.L/118.84, "i:", i)
 
         for cell in gcells:
-            cell.side1.connect(cell.main_shaft(0.6))
-            if cell == l:
-                cell.dau1.connect(cell.main_shaft(0.6))
+            cell.main_shaft.connect(cell.IS(1))
         all()
         h.dt= pow(2,-6)
-        for cell in gcells:
-            start_full = time.perf_counter()
-            cell.gna_lst.append(cell.fullsolve(0.1490, err= 1e-4, acc=1e-6))
-            end_full = time.perf_counter()
-            print(f"fullsolve time = {end_full-start_full}")
+        # for cell in gcells:
+        #     start_full = time.perf_counter()
+        #     cell.gna_lst.append(cell.fullsolve(0.1490, err= 1e-4, acc=1e-6))
+        #     end_full = time.perf_counter()
+        #     print(f"fullsolve time = {end_full-start_full}")
     disconnect()
     end_all = time.perf_counter()
-    print(f"Control: gna base = {m.fullsolve(0.1490, err=1e-4, acc=1e-6)}")
+    # print(f"Control: gna base = {m.fullsolve(0.1490, err=1e-4, acc=1e-6)}")
     print(f"total time: {(end_all-start_all)/3600} hours")
 
 def plot():
