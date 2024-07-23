@@ -48,7 +48,7 @@ def test():
 	adj_lst = [j/1000 for j in range(800, 35000, 1)]
 	adj_lst2 = []
 	diff_lst = []
-	lengths = [g/100 for g in range(5,205,5)]
+	lengths = [g/100 for g in range(5,305,5)]
 	len_lst=[]
 	fin_results = []
 	min_diff = []
