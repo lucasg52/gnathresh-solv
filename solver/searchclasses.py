@@ -82,6 +82,7 @@ class ExpandingSearch(BinSearch):
         self.lo = max(self.lim_lo, self.lo)
         d = self.hi - self.lo
         if d == 0:
+            self.a = self.lo
             return True
         if not self.propatest(self.hi):
             self.hi += 2 * d

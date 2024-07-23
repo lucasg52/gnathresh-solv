@@ -8,10 +8,10 @@ from math import  sqrt as __sqrt__
 def alphagammataper(
         IS_diam,
         s_ratio,
-        ell_c 
+        ell_c
         ):
-    """Legacy equation to get taper dimensions, alledgedly creates a section with electrotonic length ell_c, but I find this hard to believe."""
-        
+    """Legacy equation to get taper dimensions, alledgedly creates a section with electrotonic
+    length ell_c, but I find this hard to believe."""
     alpha=                          \
             ((
                     (__sqrt__(s_ratio)-1)
@@ -27,9 +27,9 @@ def alphagammataper(
 
     taper =                         \
             __sqrt__(
-                - gamma/2 
+                - gamma/2
                 + __sqrt__(
-                    alpha**2 
+                    alpha**2
                     * gamma**2
                     + 4 * alpha * ell_c**4
                     )
@@ -37,7 +37,7 @@ def alphagammataper(
             )
     return alpha, gamma, taper
 
-def elength(sec, d = None): 
+def elength(sec, d = None):
     """ // calculate the electrotonic length as given by Tuckwell p. 137 
     Keyword arguments:
         sec                     The section from which diam, g_pas, and Ra is referenced
@@ -58,12 +58,13 @@ def gr(d_parent, *args):
     """
     return(
             sum(
-                [pow(d_i, 1.5) for d_i in args]
+                pow(d_i, 1.5) for d_i in args
                 )
             ) / pow(d_parent, 1.5)
 
-def normalize_dlambda(sec, dx): 
-    """normalize the nseg of section sec such that segments are no more than dx*lambda, where lambda is the electronic length unit""" 
+def normalize_dlambda(sec, dx):
+    """normalize the nseg of section sec such that segments are no more than dx*lambda, where 
+    lambda is the electronic length unit"""
     sec.nseg =  \
         int(
             sec.L/
