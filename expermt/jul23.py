@@ -3,6 +3,8 @@ from ..cells.base import BaseExpCell as Base
 from ..cells import kinetics as kin
 from ..tools import environment as e
 from matplotlib import pyplot as plt
+import numpy as np
+import time
 
 def ngui():
     from neuron import gui
@@ -33,7 +35,7 @@ class Cell(Base):
         self.main2.diam = self.main_diam
         self.main2.L = self.main_shaft.L / 8
         self.main_shaft.L -= self.main_shaft.L / 8
-        h.define_shape()
+        #h.define_shape()
     def _disconnect(self):
         while(len(self.all) > 1):
             self.all[-1].disconnect()
@@ -41,25 +43,38 @@ class Cell(Base):
     def _reconnect(self):
         self._disconnect()
         self._connect()
+def printproctime():
+    print(time.process_time())
 
+#prerunold = e.prerun
+#def prerun(gna):
+    #printproctime()
+    #prerunold(gna)
+#e.prerun = prerun
 e.PRINTTIME = True
 m = e.m = Cell(0.2,3)
 m.dx = pow(2,-6)
-e.dt = pow(2,-7)
+e.dt = pow(2,-8)
 m._normalize()
-
 h.load_file("stdrun.hoc")
 e.aprec = e.APRecorder(m.prop_site)
 e.stim = h.IClamp(m.side(1))
 e.stim.delay = 1
 e.stim.amp = 200
 e.stim.dur  = 5/16
-print(e.fullsolve(0.15111,0.001,1e-9))
-print(m.main2.L)
-#e.SHAPECONFIG = h.define_shape
-#print(e.fullsolve(0.15111,0.001,1e-9))
-#print(m.main2.L)
 
+results  = []
+xarr = list(range(-8,-6))
+res = 0.15075
+err = pow(2,-10)
 
-
+for x in xarr:
+    m.dx = pow(2,x)
+    m._normalize()
+    resnew = e.fullsolve(res,err, pow(2,-23))
+    if abs(res - resnew) > err:
+        print(res-resnew)
+        err += 1.5* abs(res-resnew)
+    results.append(resnew)
+    res = resnew
 
