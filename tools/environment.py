@@ -5,7 +5,7 @@ That is, a tool to set up a gnathresh-solving environment that will automaticall
 
 ### Options ###
 
-SHAPECONFIG = None      # determine a function for specificing pt3d info for this bullshit 
+SHAPECONFIG = None      # determine a function for specificing pt3d info at each solve 
 
 PRINTTIME = False       # Prints the runtime of fullsearch if True
 
@@ -33,10 +33,6 @@ stim = None             # the IClamp object on the cell (MUST BE SET MANUALLY)
 
 TSTOP = None            # the simulation's tstop, should be considered read-only
                         # in future iterations this may be depreciated
-
-dx = property(setdx, getdx) 
-                        # the cell's dx, (yes, in terms of lambda)
-                        # Setting it will automatically normalize the nseg in m
 
 dt = pow(2,-6)          # the dt that will be used to model the simulation after steady
                         # state is reached
@@ -66,19 +62,21 @@ aprec = None            # the APRecorder object on the cell
 stim = None             # the IClamp object on the cell (MUST BE SET MANUALLY)
 
 ### Globals ###
-def setdx(dx):
-    m.dx = dx
-    m._normalize()
 
-def getdx(dx):
-    return m.dx
+#def setdx(self,dx):
+#    self.m.dx = dx
+#    self.m._normalize()
+#
+#def getdx(self,dx):
+#    return self.m.dx
 
 
 TSTOP = None            # the simulation's tstop, should be considered read-only
                         # in future iterations this may be depreciated
-dx = property(setdx, getdx) 
-                        # the cell's dx, (yes, in terms of lambda)
-                        # Setting it will automatically normalize the nseg in m
+#dx = property(setdx, getdx)
+#                        # the cell's dx, (yes, in terms of lambda)
+#                        # Setting it will automatically normalize the nseg in m
+
 dt = pow(2,-6)          # the dt that will be used to model the simulation after steady
                         # state is reached
 
