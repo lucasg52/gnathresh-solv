@@ -57,9 +57,12 @@ class BaseExpCell(ABC):
         self.ratio = ratio
 
         self.soma = h.Section(          name = "soma"       ,cell = self )
+        self.soma.nseg = 1
         self.IS = h.Section(            name = "IS"         ,cell = self )
         self.main_shaft = h.Section(    name = "main_shaft" ,cell = self )
         self.prop_site = h.Section(     name = "prop_site"  ,cell = self )
+
+        self._create_secs()
 
         self.main_length = 8 # // electronic length of main shaft
         self.main_diam = 1.2
@@ -73,6 +76,9 @@ class BaseExpCell(ABC):
         self._setup_bioph()
         self._setup_morph()
 
+    def _create_secs(self):
+        pass
+
     def _setup_morph(self):
         """setup morphology by initializing diameters, then connecting the segments (see _connect), then normalizing dx"""
         self.soma.L = self.soma.diam = self.soma_diam
@@ -80,9 +86,7 @@ class BaseExpCell(ABC):
         self.main_shaft.L = self.main_length * eq.elength(self.main_shaft, d = self.main_diam)
         self.main_shaft.diam = self.main_diam
         self.prop_site.diam = self.main_diam/self.ratio
-        self._connect()     # connections must be made first for self.all to be correct
-        self.all = self.soma.wholetree()
-        #the following definitions for section diameter are taken from lines 89-105. 
+        self._connect()      
         self._normalize()   # this must be executed after bioph
 
     def _connect(self):
@@ -99,9 +103,15 @@ class BaseExpCell(ABC):
     def _normalize(self):   # line 166, not clear why some sections get normalized differently.
                             # so I am just assuming it is homogenous. also made my own subroutine
         """calls normalize_dlambda for all sections"""
-        for sec in self.all:
+        for sec in self.all[1::]:       # list slicing to avoid soma nseg
             normalize_dlambda(sec, self.dx)
 
     @abstractmethod
     def __repr__(self):
         return ""
+
+    all = property(lambda self : self.soma.wholetree(), None)
+
+    def clearshape(self):
+        for sec in self.all:
+            h.pt3dclear(sec = sec)
