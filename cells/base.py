@@ -111,3 +111,7 @@ class BaseExpCell(ABC):
         return ""
 
     all = property(lambda self : self.soma.wholetree(), None)
+
+    def clearshape(self):
+        for sec in self.all:
+            h.pt3dclear(sec = sec)
