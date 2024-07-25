@@ -23,7 +23,7 @@ class GeomChecksum:
         return secnames, hasharr
     def compare(self, other):
         ret = []
-        if self.digest != other.digest:
+        if self.digest() != other.digest():
             for name, selfh, otherh in zip(self.secnames, self.hasharr, other.hasharr):
                 if selfh != otherh:
                     ret.append((name, selfh, otherh))
