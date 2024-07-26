@@ -94,7 +94,7 @@ class BaseExpCell(ABC):
         Returns: None"""
         self.IS.connect(self.soma(1))
         self.main_shaft.connect(self.IS(1)) # (line 107)
-        self.prop_site.connect(self.main_shaft(0)) 
+        self.prop_site.connect(self.main_shaft(1))      # finally where it's supposed to be 
 
     @abstractmethod
     def _setup_bioph(self):
