@@ -1,5 +1,6 @@
-from .aprecorder import APRecorder
 from neuron import h
+from .aprecorder import APRecorder
+from .. import eq
 
 class DeathTester(APRecorder):
     def __init__(
@@ -72,5 +73,66 @@ class DeathTester(APRecorder):
             "the time that the simulation should run to if the other attributes are" 
             "calibrated correctly."
             "if sync_tstop is True then h.tstop will change alongside it")
+
+class DeathWatcher:
+    def __init__(
+            self,
+            recbegin, recend,
+            recinterval = 0.25,     # lambda
+            minapspeed = 1,         # lambda/ms
+            tinterval  = 0.25,      # ms
+            maxsteps   = 100        
+            ):
+        self._setup_nodes(recbegin, recend, recinterval)
+        #self.recinterval = recinterval
+        self.minapspeed =  minapspeed 
+        self.tinterval  =  tinterval 
+        self.maxsteps = maxsteps
+
+    #def _setkwattr(self, defaults, kwargs):
+    #    unexpected = kwargs.keys().difference(defaults.keys)
+    #    if unexpected:
+    #        raise TypeError(f"unexpected keyword args: {unexpected}")
+    #    d = defaults.copy()
+    #    d.update(kwargs)
+    #    for name, v in d.items:
+    #        setattr(self, name, v)
+
+    def _setup_nodes(self, begin, end, interval):
+        rangevarplot = h.RangeVarPlot("x", begin, end)
+        seclist = h.SectionList()
+        rangevarplot.list(seclist)
+        if len(seclist):
+            print("DeathWatcher: ERROR: multiple-section paths not supported")
+            raise NotImplementedError
+        self.nodes = []
+        sec = begin.sec
+        nseg = sec.nseg
+        segpernode = int(
+                interval
+                * eq.elength(sec)
+                * nseg 
+                / sec.L)
+        if segpernode == 0:
+            print("DeathWatcher: WARNING: recinterval too fine for section")
+            segpernode = 1
+        self.nodesegs = list(sec)[int(begin.x*nseg):int(end.x*nseg):segpernode]
+        self.nodesegs.append(end)
+        self.nodes = [h.DeathRec(s) for s in self.nodesegs]
+
+    def run(self):
+        i = self.maxsteps
+        while i and self.lifetest():
+            i -= 1
+            h.continuerun(h.t + self.tinterval)
+
+    def lifetest(self):
+        return all(node.begin == 0 or node.deatht for node in self.nodes)
+
+    def getdeathtime(self):
+        self.deathtime = max(node.deatht for node in self.nodes)
+        return self.deathtime
+
+
 
 
