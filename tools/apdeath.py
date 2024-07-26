@@ -83,6 +83,8 @@ class DeathWatcher:
             tinterval  = 0.25,      # ms
             maxsteps   = 100        
             ):
+        self.deathtime = None
+
         self._setup_nodes(recbegin, recend, recinterval)
         #self.recinterval = recinterval
         self.minapspeed =  minapspeed 
@@ -102,8 +104,9 @@ class DeathWatcher:
         rangevarplot = h.RangeVarPlot("x", begin, end)
         seclist = h.SectionList()
         rangevarplot.list(seclist)
-        if len(seclist):
+        if len(list(seclist)) > 1:
             print("DeathWatcher: ERROR: multiple-section paths not supported")
+            print(list(seclist))
             raise NotImplementedError
         self.nodes = []
         sec = begin.sec
