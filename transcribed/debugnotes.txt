@@ -1,1 +1,0 @@
-- Successful propogation in experimental cell, with default parameters, after fixing diameters
