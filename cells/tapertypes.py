@@ -1,3 +1,4 @@
+import numpy as np
 from .base import BaseExpCell
 from . import adoptedeq as eq
 from . import kinetics as kin
@@ -109,3 +110,16 @@ class ExpCell_notaper(BaseExpCell):
         kin.insmod_Traub(self.prop_site,    "axon")
 
 
+class BaseTaperCell(BaseExpCell):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.soma.nseg = 1
+    def _normalize(self):
+        for sec in self.all[1::]:
+            eq.normalize_dlambda(sec, self.dx)
+        self._taperIS()
+    def _taperIS(self):
+        n = self.IS.nseg
+        taperarr = np.linspace(self.IS_diam, self.main_diam, n+1)
+        for seg, diam in zip(self.IS, taperarr):
+            seg.diam = diam
