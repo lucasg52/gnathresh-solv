@@ -7,16 +7,16 @@ def secchecksum(sec, varname = None):
         varname = "diam"
     rvar = h.RangeVarPlot(varname, sec(0), sec(1))
     rawbin = np.array(rvar.vector()).tobytes()
-    return (__md5__(rawbin)).digest
+    return (__md5__(rawbin)).digest()
 
 class GeomChecksum:
-    def __init__(self, cell):
+    def __init__(self, cell, varname = "diam"):
+        self.varname = varname
         self.secnames, self.hasharr = self.genhasharr(cell)
-        self.varname = None
 
     def genhasharr(self, cell):
-        d = {sec.name : secchecksum(sec, self.varname) for sec in cell.all}
-        keys = d.keys()
+        d = {sec.name() : secchecksum(sec, self.varname) for sec in cell.all}
+        keys = list(d.keys())
         keys.sort()
         secnames = keys.copy()
         hasharr = [d[k] for k in keys]
@@ -29,4 +29,4 @@ class GeomChecksum:
                     ret.append((name, selfh, otherh))
         return ret
     def digest(self):
-        return __md5__(b''.join(self.hasharr))
+        return __md5__(b''.join(self.hasharr)).digest()

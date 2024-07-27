@@ -78,14 +78,16 @@ class DeathWatcher:
     def __init__(
             self,
             recbegin, recend,
+            tstop,                  # ms
             recinterval = 0.25,     # lambda
-            minapspeed = 1,         # lambda/ms
+            minapspeed = 1,         # lambda/ms (unused)
             tinterval  = 0.25,      # ms
             maxsteps   = 100        
             ):
         self.deathtime = None
 
         self._setup_nodes(recbegin, recend, recinterval)
+        self.tstop = tstop
         #self.recinterval = recinterval
         self.minapspeed =  minapspeed 
         self.tinterval  =  tinterval 
@@ -124,14 +126,25 @@ class DeathWatcher:
         self.nodes = [h.DeathRec(s) for s in self.nodesegs]
 
     def run(self):
+        h.continuerun(self.tstop)
         i = self.maxsteps
+        while i and self.prelifetest():
+            i -=1 
+            h.continuerun(h.t + self.tinterval)
         while i and self.lifetest():
             i -= 1
             h.continuerun(h.t + self.tinterval)
+    def prelifetest(self):
+        return all(
+                    node.begin == 0 
+                    for node in self.nodes
+                )
 
     def lifetest(self):
-        return all(node.begin == 0 or node.deatht for node in self.nodes)
-
+        return not all(
+                bool(node.begin) == bool(node.deatht)
+                for node in self.nodes
+                )
     def getdeathtime(self):
         self.deathtime = max(node.deatht for node in self.nodes)
         return self.deathtime
