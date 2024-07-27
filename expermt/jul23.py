@@ -5,6 +5,7 @@ from ..tools import environment as e
 from matplotlib import pyplot as plt
 import numpy as np
 import time
+from gnatsolv.visual import movie
 
 def ngui():
     from neuron import gui
@@ -68,13 +69,22 @@ xarr = list(range(-8,-6))
 res = 0.15075
 err = pow(2,-10)
 
-for x in xarr:
-    m.dx = pow(2,x)
-    m._normalize()
-    resnew = e.fullsolve(res,err, pow(2,-23))
-    if abs(res - resnew) > err:
-        print(res-resnew)
-        err += 1.5* abs(res-resnew)
-    results.append(resnew)
-    res = resnew
+GNA = None
+
+def prerun():
+    e.prerun(GNA)
+
+
+movie.prerun = prerun
+
+print(h.topology)
+#for x in xarr:
+#    m.dx = pow(2,x)
+#    m._normalize()
+#    resnew = e.fullsolve(res,err, pow(2,-23))
+#    if abs(res - resnew) > err:
+#        print(res-resnew)
+#        err += 1.5* abs(res-resnew)
+#    results.append(resnew)
+#    res = resnew
 
