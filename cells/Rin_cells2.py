@@ -2,11 +2,11 @@ from cells.tapertypes import BaseExpCell
 from neuron import h
 from cells import kinetics
 from cells.adoptedeq import elength
-import cells.adoptedeq as gnat
-from tools.aprecorder import APRecorder
+import cells.adoptedeq as eq
+from Tools.aprecorder import APRecorder
 from solver.searchclasses import ExpandingSearch
 import time
-import math
+import numpy as np
 h.load_file("stdrun.hoc")
 
 __tstop__ = h.tstop = 15
@@ -30,12 +30,24 @@ class Rin_cell_1(BaseExpCell):
 		self.est = 0.1497
 
 		super().__init__(self.dx,3,gid)
+		self._normalize()
 
 	def _connect(self):
 		super()._connect()
 		self.parent.connect(self.main_shaft(0.3))
 		self.prop_site.connect(self.main_shaft(1))
 		self.side1.connect(self.main_shaft(0.6))
+
+	def _normalize(self):
+		for sec in self.all[1::]:
+			eq.normalize_dlambda(sec, self.dx)
+		self._taperIS()
+
+	def _taperIS(self):
+		n = self.IS.nseg
+		taperarr = np.linspace(self.IS_diam, self.main_diam, n + 1)
+		for seg, diam in zip(self.IS, taperarr):
+			seg.diam = diam
 
 	def _setup_morph(self):
 		super()._setup_morph()
@@ -46,7 +58,7 @@ class Rin_cell_1(BaseExpCell):
 
 	def _setup_bioph(self):
 		super()._setup_bioph()
-		self.all = [self.parent, self.side1, self.main_shaft, self.IS, self.prop_site, self.soma]
+		# self.all = [self.parent, self.side1, self.main_shaft, self.IS, self.prop_site, self.soma]
 		for sec in [self.parent, self.side1, self.main_shaft, self.IS, self.prop_site]:
 			kinetics.insmod_Traub(sec, "axon")
 		kinetics.insmod_Traub(self.soma, "soma")
@@ -166,7 +178,7 @@ class Rin_cell_1y(BaseExpCell):
 
 	def _setup_bioph(self):
 		super()._setup_bioph()
-		self.all = [self.parent, self.side1, self.dau1, self.dau2, self.main_shaft, self.IS, self.prop_site, self.soma]
+		# self.all = [self.parent, self.side1, self.dau1, self.dau2, self.main_shaft, self.IS, self.prop_site, self.soma]
 		for sec in [self.parent, self.side1, self.dau1, self.dau2, self.main_shaft, self.IS, self.prop_site]:
 			kinetics.insmod_Traub(sec, "axon")
 		kinetics.insmod_Traub(self.soma, "soma")
@@ -281,7 +293,7 @@ class Rin_cell_3y(BaseExpCell):
 
 	def _setup_bioph(self):
 		super()._setup_bioph()
-		self.all = self.soma.wholetree()
+		# self.all = self.soma.wholetree()
 		for sec in [self.parent, self.side1, self.dau1, self.dau2, self.dau3, self.main_shaft, self.IS, self.prop_site]:
 			kinetics.insmod_Traub(sec, "axon")
 		kinetics.insmod_Traub(self.soma, "soma")
@@ -386,7 +398,7 @@ class Rin_cell_v(BaseExpCell):
 
 	def _setup_bioph(self):
 		super()._setup_bioph()
-		self.all = [self.parent, self.side1, self.dau1, self.main_shaft, self.IS, self.prop_site, self.soma]
+		# self.all = [self.parent, self.side1, self.dau1, self.main_shaft, self.IS, self.prop_site, self.soma]
 		for sec in [self.parent, self.side1, self.dau1, self.main_shaft, self.IS, self.prop_site]:
 			kinetics.insmod_Traub(sec, "axon")
 		kinetics.insmod_Traub(self.soma, "soma")
@@ -492,7 +504,7 @@ class Rin_cell_t(BaseExpCell):
 
 	def _setup_bioph(self):
 		super()._setup_bioph()
-		self.all = [self.parent, self.side1, self.dau1, self.main_shaft, self.IS, self.prop_site, self.soma]
+		# self.all = [self.parent, self.side1, self.dau1, self.main_shaft, self.IS, self.prop_site, self.soma]
 		for sec in [self.parent, self.side1, self.dau1, self.main_shaft, self.IS, self.prop_site]:
 			kinetics.insmod_Traub(sec, "axon")
 		kinetics.insmod_Traub(self.soma, "soma")
@@ -668,4 +680,3 @@ class Rin_cell_2b(BaseExpCell):
 
 	def __repr__(self):
 		return f"2branch_base[{self.gid}]"
-

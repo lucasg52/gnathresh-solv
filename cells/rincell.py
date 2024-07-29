@@ -1,13 +1,16 @@
 import time
 from neuron import h
-from .tapertypes import BaseTaperCell
-from . import kinetics
-from .adoptedeq import elength
-from ..tools.aprecorder import APRecorder
-from ..solver.searchclasses import ExpandingSearch
+from cells.tapertypes import BaseTaperCell
+from cells import kinetics
+from cells.adoptedeq import elength
+from tools.aprecorder import APRecorder
+from solver.searchclasses import ExpandingSearch
+from cells import adoptedeq as eq
+import numpy as np
 h.load_file("stdrun.hoc")
 
 __tstop__ = h.tstop = 15
+
 class RinCell(BaseTaperCell):
 	def __init__(self, gid):
 		self.gid = gid
@@ -17,8 +20,17 @@ class RinCell(BaseTaperCell):
 		self.diff_rin = []
 		self.dx = pow(2,-6)
 		self.est = 0.1497
-
 		super().__init__(self.dx,3,gid)
+	def _normalize(self):
+		for sec in self.all[1::]:
+			eq.normalize_dlambda(sec, self.dx)
+		self._taperIS()
+
+	def _taperIS(self):
+		n = self.IS.nseg
+		taperarr = np.linspace(self.IS_diam, self.main_diam, n + 1)
+		for seg, diam in zip(self.IS, taperarr):
+			seg.diam = diam
 
 	def _create_secs(self):
 		self.parent = h.Section("parent", self)
@@ -32,28 +44,22 @@ class RinCell(BaseTaperCell):
 
 	def _setup_morph(self):
 		super()._setup_morph()
-
-		self.parent.diam = 0.2
-		self.side1.diam = 0.2
-		self.parent.L = 400
+		self.parent.diam = self.side1.diam = 0.2
 		self.side1.L = 600
-
-
-		#self.IS.diam = self.IS_diam 
-		# removed so that IS can be tapered
 		self.prop_site.L = 2*elength(self.prop_site)
 		self.main_shaft.L = 4*elength(self.main_shaft)
 		self.parent.L = 4 * elength(self.parent)
 
 	def _setup_bioph(self):
 		super()._setup_bioph()
-		self.all = [self.parent, self.side1, self.main_shaft, self.IS, self.prop_site, self.soma]
-		for sec in [self.parent, self.side1, self.main_shaft, self.IS, self.prop_site]:
+		for sec in [self.IS, self.main_shaft, self.prop_site, self.parent, self.side1]:
 			kinetics.insmod_Traub(sec, "axon")
 		kinetics.insmod_Traub(self.soma, "soma")
+		self._normalize()
+		self._taperIS()
 
 	def setgna(self, gna):
-		for sec in self.soma.wholetree():
+		for sec in self.all:
 			if sec is not self.soma:
 				if sec is not self.IS:
 					sec.gbar_nafTraub = gna
@@ -61,13 +67,13 @@ class RinCell(BaseTaperCell):
 
 	def getgna(self):
 		gna = self.main_shaft.gbar_nafTraub
-		for sec in self.soma.wholetree():
+		for sec in self.all:
 			if sec is not self.soma:
 				if sec is not self.IS:
 					assert(sec.gbar_nafTraub == gna)
 		return gna
 
-	def stim_setup(self, loc):
+	def setup_stim(self, loc):
 		self.stim = h.IClamp(self.parent(loc))
 		self.stim.amp = 200
 		self.stim.delay = 5
@@ -114,19 +120,139 @@ class RinCell(BaseTaperCell):
 		return imp_geter.input(sec)
 # I suppose this is the only "numerical" part of your class that i would keep inside, only because it fits the name
 
+	def __repr__(self):
+		return f"Rin_Bcell[{self.gid}]"
 
+#creating the Y-shaped side branch cell (aka the Y cell) class
+class Rin_Ycell(RinCell):
+	def __init__(self, gid):
+		super().__init__(gid)
 
-	# def alt_Rin(self, loc):
-	# 	h.dt = 0.5
-	# 	self.side1.gbar_nafTraub = 0
-	# 	self.side1.gbar_kdrTraub = 0
-	# 	stim = h.IClamp(loc)
-	# 	stim.amp = 200
-	# 	stim.dur = 100
-	# 	stim.delay = 5
-	# 	h.finitialize(-70)
-	# 	h.continuerun(100)
-	# 	return loc.v/stim.amp
+	def _create_secs(self):
+		super()._create_secs()
+		self.dau1 = h.Section("dau1", self)
+		self.dau2 = h.Section("dau2", self)
+
+	def _connect(self):
+		super()._connect()
+		self.dau1.connect(self.side1(1))
+		self.dau2.connect(self.side1(1))
+
+	def _setup_morph(self):
+		super()._setup_morph()
+		self.dau1.diam = self.dau2.diam = 0.125992105
+		self.dau1.L = self.dau2.L = self.side1.L = 300
+
+	def _setup_bioph(self):
+		super()._setup_bioph()
+		for sec in [self.dau1, self.dau2]:
+			kinetics.insmod_Traub(sec, "axon")
 
 	def __repr__(self):
-		return f"RinCell[{self.gid}]"
+		return f"Y_Cell[{self.gid}]"
+
+#class for creating the w-shaped side branch cell (aka the W cell)
+class Rin_Wcell(Rin_Ycell):
+	def __init__(self, gid):
+		self.gid = gid
+		super().__init__(gid)
+
+	def _create_secs(self):
+		super()._create_secs()
+		self.dau3 = h.Section("dau3", self)
+
+	def _connect(self):
+		super()._connect()
+		self.dau3.connect(self.side1(1))
+
+	def _setup_morph(self):
+		super()._setup_morph()
+		self.dau1.diam = self.dau2.diam = self.dau3.diam=0.09614997135
+		self.dau3.L = 300
+
+	def _setup_bioph(self):
+		super()._setup_bioph()
+		kinetics.insmod_Traub(self.dau3, "axon")
+
+	def __repr__(self):
+		return f"W_cell[{self.gid}]"
+
+#class for creating the V-shaped side branch cell (aka the V cell)
+class Rin_Vcell(RinCell):
+	def __init__(self, gid):
+		self.gid = gid
+		super().__init__(gid)
+
+	def _create_secs(self):
+		super()._create_secs()
+		self.dau1 = h.Section("dau1", self)
+
+	def _connect(self):
+		super()._connect()
+		self.dau1.connect(self.main_shaft(0.6))
+
+	def _setup_morph(self):
+		super()._setup_morph()
+		self.side1.diam = 0.125992105
+		self.dau1.diam = 0.125992105
+		self.side1.L = self.dau1.L = 300
+
+	def _setup_bioph(self):
+		super()._setup_bioph()
+		kinetics.insmod_Traub(self.dau1, "axon")
+
+	def __repr__(self):
+		return f"V[{self.gid}]"
+
+#class for creating the T-shaped side branch cell (aka the T cell)
+class Rin_Tcell(RinCell):
+	def __init__(self, gid):
+		self.gid = gid
+		super().__init__(gid)
+
+	def _create_secs(self):
+		super()._create_secs()
+		self.dau1 = h.Section("dau1", self)
+
+	def _connect(self):
+		super()._connect()
+		self.dau1.connect(self.side1(0.5))
+
+	def _setup_morph(self):
+		super()._setup_morph()
+		self.dau1.diam = 0.05
+		self.dau1.L = 100
+
+	def _setup_bioph(self):
+		super()._setup_bioph()
+		kinetics.insmod_Traub(self.dau1, "axon")
+
+	def __repr__(self):
+		return f"T[{self.gid}]"
+
+#class for creating a cell with two side branches (aka 2bb cell, which stand for the cell having 2 base branches)
+class Rin_2bbcell(RinCell):
+	def __init__(self, gid):
+		self.gid = gid
+		super().__init__(gid)
+
+	def _create_secs(self):
+		super()._create_secs()
+		self.side2 = h.Section("side2", self)
+
+	def _connect(self):
+		super()._connect()
+		self.side1.connect(self.main_shaft(0.5))
+		self.side2.connect(self.main_shaft(0.7))
+
+	def _setup_morph(self):
+		super()._setup_morph()
+		self.side2.diam = 0.2
+		self.side1.L = self.side2.L = 600
+
+	def _setup_bioph(self):
+		super()._setup_bioph()
+		kinetics.insmod_Traub(self.side2, "axon")
+
+	def __repr__(self):
+		return f"2bb[{self.gid}]"
