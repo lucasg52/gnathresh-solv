@@ -55,7 +55,7 @@ class Env:
     self.TSTOPSAFETY = 6         # maximum amount of sim time allowed between ap propogation and 
                             # end of simulation
                             # in future iterations this may be depreciated
-    TSTOPINCREMENT = 3      # increment for increasing tstop
+    self.TSTOPINCREMENT = 3      # increment for increasing tstop
     self.MAXGBAR = 0.45          # maximum gbar for search (search will not go above this value)
     
     ### Objects ###
@@ -89,7 +89,7 @@ class Env:
       if cell is None:
           cell = self.m
       if prop_site is None:
-          prop_site = m.prop_site
+          prop_site = cell.prop_site
       if ran is not None:
           args = (prop_site, ran)
       else:
@@ -133,11 +133,11 @@ class Env:
           tstop = self.stim.delay + self.APTRAVELTIME
       else:
           tstop  = tstop_init
-      if SHAPECONFIG is not None:
+      if self.SHAPECONFIG is not None:
           self.SHAPECONFIG()
       search = ExpandingSearch(a - err, a + err, self.proptest_basic, lim_lo = 0, lim_hi = 0.45)
       for i in range(maxsteps):
-          if fullsolveiter(search, tstop, acc):
+          if self.fullsolveiter(search, tstop, acc):
               break
       if self.PRINTTIME:
           print(time.process_time() - ptstart)
