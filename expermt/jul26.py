@@ -7,7 +7,7 @@ from ..cells import kinetics as kin
 from .. import eq
 from ..tools.environment import DeathEnviro
 from ..tools.checksum import GeomChecksum as Chksum
-from ..tools.aprecorder import APRecorder
+#from ..tools.aprecorder import APRecorder
 from ..visual import movie
 
 
@@ -47,7 +47,7 @@ stim.dur = 2/16
 stim.delay = 1
 
 
-e.aprec = deathrec = DeathWatcher(m.main_shaft(0), m.main_shaft(0.5), tstop = 1.5, recinterval = m.dx)
+e.aprec = deathrec = DeathWatcher(m.main_shaft, m.main_shaft, tstop = 1.5) 
 
 def proptest(gbar):
     e.prerun(gbar)

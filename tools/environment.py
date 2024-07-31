@@ -175,7 +175,7 @@ class Environment(AbstractEnviro):
     
 
 class DeathEnviro(Environment):
-    __doc__ = AbstractEnviro.__doc__ + "\nDue to using a deathrec, this is unable to detect double-propagations"
+    #__doc__ = AbstractEnviro.__doc__ + "\nDue to using a deathrec, this is unable to detect double-propagations"
     def __init__(self, m, deathrec, stim, **kwargs):
         super().__init__(m, deathrec, stim, **kwargs)
         self.deathrec = self.aprec # simply realiasing it in the args and attributes

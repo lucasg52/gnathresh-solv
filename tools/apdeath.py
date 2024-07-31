@@ -1,6 +1,7 @@
+import time
 from neuron import h
 from .aprecorder import APRecorder
-from .. import eq
+#from .. import eq
 
 class DeathTester(APRecorder):
     def __init__(
@@ -75,7 +76,7 @@ class DeathTester(APRecorder):
             "if sync_tstop is True then h.tstop will change alongside it")
 
 
-class DeathWatcher:
+class DeathRec:
     def __init__(
             self,
             recbegin, recend,
@@ -88,6 +89,8 @@ class DeathWatcher:
         self.deathtime = None
 
         self._setup_nodes(recbegin, recend)
+        self.aprec = APRecorder(recend, 1)
+        self.proptest = self.aprec.proptest
         self.tstop = tstop
         #self.recinterval = recinterval
         self.minapspeed =  minapspeed 
@@ -128,21 +131,25 @@ class DeathWatcher:
 #
 
     def _setup_nodes(self, begin, end):
+        beginseg = begin(0)
+        endseg = end(1)
         seclist = h.SectionList()
-        rvp = h.RangeVarPlot("x", begin, end)
+        rvp = h.RangeVarPlot("x", beginseg, endseg)
         rvp.list(seclist)
         self.nodes = []
-        if begin.x == 0 and end.x == 1:
-            map(self.nodes.extend, (sec.allseg() for sec in seclist))
-            for s in seclist:
-                s.insert("apdeath")
-        else:
-            h.RangeVarPlot(
-                    lambda seg : self.nodes.append(seg),
-                    begin, end
-                    )
-            for n in self.nodes: 
-                n.insert("apdeath")
+        for sec in seclist:
+            self.nodes.extend(list(sec.allseg()))
+        for s in seclist:
+            s.insert("apdeath")
+        #else:
+        #    print (self.nodes)
+        #    h.RangeVarPlot(
+        #            lambda segx : self.nodes.append(h.cas()(segx)),
+        #            beginseg, endseg
+        #            )
+        #    print (self.nodes)
+        #    for n in self.nodes: 
+        #        n.insert("apdeath")
 
     def run(self):
         h.continuerun(self.tstop)
@@ -155,17 +162,16 @@ class DeathWatcher:
             h.continuerun(h.t + self.tinterval)
     def prelifetest(self):
         return all(
-                    node.begin == 0 
+                    node.begin_apdeath == 0 
                     for node in self.nodes
                 )
 
     def lifetest(self):
         return not all(
-                bool(node.begin) == bool(node.deatht)
+                bool(node.begin_apdeath) == bool(node.deatht_apdeath)
                 for node in self.nodes
                 )
     def getdeathtime(self):
-        self.deathtime = max(node.deatht for node in self.nodes)
+        self.deathtime = max(node.deatht_apdeath for node in self.nodes)
         return self.deathtime
-
 
