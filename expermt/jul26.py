@@ -2,13 +2,15 @@ from neuron import h
 import numpy as np
 from matplotlib import pyplot as plt
 from ..cells.base import BaseExpCell
-from ..tools.apdeath import DeathWatcher
+from ..tools.apdeath import DeathRec as DeathWatcher
 from ..cells import kinetics as kin
 from .. import eq
-from ..tools import environment as e
+from ..tools.environment import DeathEnviro
 from ..tools.checksum import GeomChecksum as Chksum
 from ..tools.aprecorder import APRecorder
 from ..visual import movie
+
+
 
 h.load_file("stdrun.hoc")
 
@@ -35,7 +37,7 @@ class NoISCell(BaseExpCell):
         super()._connect()
         self.parent.connect(self.main_shaft(0.25))
 
-e.dt = pow(2,-6)
+e = DeathEnviro(None, None, None)
 
 e.m = m = NoISCell(pow(2,-5), 3)
 
@@ -44,19 +46,18 @@ stim.amp = 100
 stim.dur = 2/16
 stim.delay = 1
 
-e.aprec= aprec = APRecorder(m.main_shaft, ran = 0.5)
 
-death = DeathWatcher(m.main_shaft(0), m.main_shaft(0.5), tstop = 1.5, recinterval = m.dx)
+e.aprec = deathrec = DeathWatcher(m.main_shaft(0), m.main_shaft(0.5), tstop = 1.5, recinterval = m.dx)
 
 def proptest(gbar):
     e.prerun(gbar)
-    death.run()
-    return aprec.proptest()
+    deathrec.run()
+    return deathrec.proptest()
 
 def timetest(gbar):
     e.prerun(gbar)
-    death.run()
-    return death.getdeathtime()
+    deathrec.run()
+    return deathrec.getdeathtime()
 
 e.proptest_basic = proptest
 
