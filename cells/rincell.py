@@ -19,7 +19,9 @@ class RinCell(BaseTaperCell):
 		self.diff_gna = []
 		self.diff_rin = []
 		self.dx = pow(2,-6)
-		self.est = 0.1497
+		self.est = 0.149525
+		self.name = 'base cell'
+		self.csite = 0.6
 		super().__init__(self.dx,3,gid)
 	def _normalize(self):
 		for sec in self.all[1::]:
@@ -38,13 +40,14 @@ class RinCell(BaseTaperCell):
 
 	def _connect(self):
 		super()._connect()
-		self.parent.connect(self.main_shaft(0.3))
+		self.parent.connect(self.main_shaft(0.2))
 		self.prop_site.connect(self.main_shaft(1))
 		self.side1.connect(self.main_shaft(0.6))
 
 	def _setup_morph(self):
 		super()._setup_morph()
 		self.parent.diam = self.side1.diam = 0.2
+		self.prop_site.diam = 0.6
 		self.side1.L = 600
 		self.prop_site.L = 2*elength(self.prop_site)
 		self.main_shaft.L = 4*elength(self.main_shaft)
@@ -75,53 +78,78 @@ class RinCell(BaseTaperCell):
 
 	def setup_stim(self, loc):
 		self.stim = h.IClamp(self.parent(loc))
-		self.stim.amp = 200
+		self.stim.amp = 0.2
 		self.stim.delay = 5
 		self.stim.dur = 5/16
-		self.rec = APRecorder(self.prop_site)
+		# self.rec = APRecorder(self.prop_site)
 
-	def proptest(self, gbar):
-		self.setgna(gbar)
-		h.finitialize(-69)
-		h.continuerun(__tstop__)
-		return self.rec.proptest()
 
-	def fullsolve(self, a, err=2e-3, acc=pow(2, -30), maxsteps=45, tstop_init=None):
-		global __ERRFLAG__
-		ptstart = time.process_time()
-		if tstop_init is None:
-			__tstop__ = self.stim.delay + 10
-		else:
-			__tstop__ = tstop_init
-		search = ExpandingSearch(a - err, a + err, self.proptest, lim_lo=0, lim_hi=0.45)
-		for i in range(maxsteps):
-			if search.searchstep():
-				break
-			if self.rec.proptest():
-				if self.rec.recorded[0] > __tstop__ - 6:
-					__tstop__ += 3
-					print(__tstop__)
-			if search.hi - search.lo <= acc:
-				break
-		print(time.process_time() - ptstart)
-		if i == maxsteps - 1:
-			print("WARNING!!! U REACHED THE MAX STEPS!!")
-		if abs(search.a - a) > 4 * err:
-			__ERRFLAG__ = abs(search.a - a)
-		return search.a
+	# def proptest(self, gbar):
+	# 	self.setgna(gbar)
+	# 	h.finitialize(-69)
+	# 	h.continuerun(__tstop__)
+	# 	return self.rec.proptest()
+
+	# def fullsolve(self, a, err=2e-3, acc=pow(2, -30), maxsteps=45, tstop_init=None):
+	# 	global __ERRFLAG__
+	# 	self.stim.amp = 0.2
+	# 	ptstart = time.process_time()
+	# 	if tstop_init is None:
+	# 		__tstop__ = self.stim.delay + 10
+	# 	else:
+	# 		__tstop__ = tstop_init
+	# 	search = ExpandingSearch(a - err, a + err, self.proptest, lim_lo=0, lim_hi=0.45)
+	# 	for i in range(maxsteps):
+	# 		if search.searchstep():
+	# 			break
+	# 		if self.rec.proptest():
+	# 			if self.rec.recorded[0] > __tstop__ - 6:
+	# 				__tstop__ += 3
+	# 				print(__tstop__)
+	# 		if search.hi - search.lo <= acc:
+	# 			break
+	# 	print(time.process_time() - ptstart)
+	# 	if i == maxsteps - 1:
+	# 		print("WARNING!!! YOU REACHED THE MAX STEPS!!")
+	# 	if abs(search.a - a) > 4 * err:
+	# 		__ERRFLAG__ = abs(search.a - a)
+	# 	return search.a
 
 # fullsolve should be external. No reason to have it part of the class itself.
 # recommend using tools.environment, but you can do whatever you want
 # only reason is that it is theoretically easier for others to read, since you are not copying and pasting code
-	def getRin(self, sec):  # Renamed, better to have a method start with a lowercase anyways
-		imp_geter = h.Impedance()
-		imp_geter.loc(sec)
-		imp_geter.compute(0)
-		return imp_geter.input(sec)
+
+	def set_resting(self, loc):
+		self.stim.amp = 0
+		self.setgna(0)
+		self.stim2 = h.IClamp(self.main_shaft(loc))
+		self.stim2.amp = 0
+		self.stim2.delay = 5
+		self.stim2.dur = 105
+		h.dt = 0.2
+		h.finitialize(-69)
+		h.continuerun(105)
+		self.base = self.main_shaft(loc).v
+
+	def getRin(self, loc):  # Renamed, better to have a method start with a lowercase anyways
+		self.stim2.amp = 0.2
+		self.setgna(0)
+		# imp_geter = h.Impedance()
+		# imp_geter.loc(sec)
+		# imp_geter.compute(0)
+		# return imp_geter.input(sec)
+		h.finitialize(-69)
+		h.continuerun(45)
+		# if (self.main_shaft(loc).v - self.base) == 0:
+		# 	return None
+		# else:
+		return((self.main_shaft(loc).v - self.base)/self.stim2.amp)
 # I suppose this is the only "numerical" part of your class that i would keep inside, only because it fits the name
 
+	def set_matx(self, len):
+		self.mtx = np.zeros(shape=(len, 3))
 	def __repr__(self):
-		return f"Rin_Bcell[{self.gid}]"
+		return f"Base[{self.gid}]"
 
 #creating the Y-shaped side branch cell (aka the Y cell) class
 class Rin_Ycell(RinCell):
@@ -152,7 +180,7 @@ class Rin_Ycell(RinCell):
 		return f"Y_Cell[{self.gid}]"
 
 #class for creating the w-shaped side branch cell (aka the W cell)
-class Rin_Wcell(Rin_Ycell):
+class Rin_Trident(Rin_Ycell):
 	def __init__(self, gid):
 		self.gid = gid
 		super().__init__(gid)
@@ -175,7 +203,7 @@ class Rin_Wcell(Rin_Ycell):
 		kinetics.insmod_Traub(self.dau3, "axon")
 
 	def __repr__(self):
-		return f"W_cell[{self.gid}]"
+		return f"Trident[{self.gid}]"
 
 #class for creating the V-shaped side branch cell (aka the V cell)
 class Rin_Vcell(RinCell):
@@ -203,6 +231,56 @@ class Rin_Vcell(RinCell):
 
 	def __repr__(self):
 		return f"V[{self.gid}]"
+
+class Rin_Wcell(Rin_Vcell):
+	def __init__(self, gid):
+		self.gid = gid
+		super().__init__(gid)
+
+	def _create_secs(self):
+		super()._create_secs()
+		self.dau2 = h.Section("dau2", self)
+
+	def _connect(self):
+		super()._connect()
+		self.dau2.connect(self.main_shaft(0.6))
+
+	def _setup_morph(self):
+		super()._setup_morph()
+		self.side1.diam = self.dau1.diam = self.dau2.diam = 0.0961499714
+		self.dau2.L = 300
+
+	def _setup_bioph(self):
+		super()._setup_bioph()
+		kinetics.insmod_Traub(self.dau2, "axon")
+
+	def __repr__(self):
+		return f"W[{self.gid}]"
+
+class Rin_W2cell(Rin_Wcell):
+	def __init__(self, gid):
+		self.gid = gid
+		super().__init__(gid)
+
+	def _create_secs(self):
+		super()._create_secs()
+		self.dau3 = h.Section("dau3", self)
+
+	def _connect(self):
+		super()._connect()
+		self.dau3.connect(self.main_shaft(0.6))
+
+	def _setup_morph(self):
+		super()._setup_morph()
+		self.side1.diam = self.dau1.diam = self.dau2.diam = self.dau3.diam = 0.0793700526
+		self.dau2.L = 300
+
+	def _setup_bioph(self):
+		super()._setup_bioph()
+		kinetics.insmod_Traub(self.dau3, "axon")
+
+	def __repr__(self):
+		return f"4_side[{self.gid}]"
 
 #class for creating the T-shaped side branch cell (aka the T cell)
 class Rin_Tcell(RinCell):
