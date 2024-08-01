@@ -1,7 +1,8 @@
 NEURON {
 	SUFFIX apdeath
-	RANGE deatht, begin, vthresh
-	GLOBAL proprecorded
+	RANGE deatht, begin
+	GLOBAL proprecorded, vthresh, activity
+	EXTERNAL updatet_deathupdate
 }
 PARAMETER {
 	v			(millivolt)
@@ -36,3 +37,5 @@ AFTER SOLVE{
 PROCEDURE recordprop(){
 	proprecorded = 1
 }
+
+ 
