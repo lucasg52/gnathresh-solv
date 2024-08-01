@@ -93,9 +93,9 @@ class Environment(AbstractEnviro):
         self.MAXGBAR = 0.45          # maximum gbar for search (search will not go above this value)
         
         ### Objects ###
-        self.m = None                # the cell to do experiments on
-        self.aprec = None            # the APRecorder object on the cell
-        self.stim = None             # the IClamp object on the cell (MUST BE SET MANUALLY)
+        #self.m = None                # the cell to do experiments on
+        #self.aprec = None            # the APRecorder object on the cell
+        #self.stim = None             # the IClamp object on the cell (MUST BE SET MANUALLY)
         
         self.TSTOP = None            # the simulation's tstop, should be considered read-only
                                 # in future iterations this may be depreciated
