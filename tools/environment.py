@@ -84,7 +84,7 @@ class Environment(AbstractEnviro):
         self.SHAPECONFIG = None      # determine a function for specificing pt3d info for this bullshit 
         self.PRINTTIME = False       # Prints the runtime of fullsearch if True
         self.STEADYDUR = 200         # simulation time for calculating steady state
-        self.STEADYDT =  pow(2, -2)  # the dt used to reach a steady state
+        self.STEADYDT =  2           # the dt used to reach a steady state
         self.APTRAVELTIME = 10       # expected time it takes for AP to travel normally
         self.TSTOPSAFETY = 6         # maximum amount of sim time allowed between ap propagation and 
                                 # end of simulation
@@ -96,6 +96,8 @@ class Environment(AbstractEnviro):
         #self.m = None                # the cell to do experiments on
         #self.aprec = None            # the APRecorder object on the cell
         #self.stim = None             # the IClamp object on the cell (MUST BE SET MANUALLY)
+        self.savestate = h.SaveState()
+        self.savestategbar = -1
         
         self.TSTOP = None            # the simulation's tstop, should be considered read-only
                                 # in future iterations this may be depreciated
@@ -113,7 +115,7 @@ class Environment(AbstractEnviro):
             args = (prop_site)
         self.aprec = APRecorder(*args)
 
-    def prerun(self, gbar, steadydur = None):
+    def prerun(self,gbar, steadydur = None):
         self.set_gbar(gbar)
         if steadydur is None:
             steadydur = self.STEADYDUR
@@ -122,7 +124,15 @@ class Environment(AbstractEnviro):
         h.t = 0 - abs(self.STEADYDUR)
         h.continuerun(0)
         h.dt = self.dt
+        #self.savestate.save()
+        #self.savestategbar = gbar
     
+
+    #def prerun(self, gbar, steadydur = None):
+    #    if self.savestategbar == gbar:
+    #        self.savestate.restore()
+    #    else:
+    #        self.newprerun(gbar, steadydur = steadydur)
     def proptest(self, gbar):
         self.prerun(gbar)
         h.continuerun(self.TSTOP)

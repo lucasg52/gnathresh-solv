@@ -47,7 +47,7 @@ stim.dur = 2/16
 stim.delay = 1
 
 
-e.aprec = deathrec = DeathWatcher(m.main_shaft, m.main_shaft, tstop = 1.5) 
+e.deathrec = e.aprec = deathrec = DeathWatcher(m.main_shaft, m.main_shaft, tstop = 1.5) 
 
 def proptest(gbar):
     e.prerun(gbar)
