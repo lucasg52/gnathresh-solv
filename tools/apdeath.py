@@ -49,7 +49,6 @@ class DeathRec:
         #        n.insert("apdeath")
 
     def run(self):
-        h.updatet_deathupdate = self.tstop
         h.continuerun(self.tstop)
         i = self.maxsteps
         while i and self.prelifetest():
