@@ -32,11 +32,12 @@ class DeathRec:
         seclist = h.SectionList()
         rvp = h.RangeVarPlot("x", beginseg, endseg)
         rvp.list(seclist)
-        self.nodes = []
-        for sec in seclist:
-            self.nodes.extend(list(sec.allseg()))
         for s in seclist:
             s.insert("apdeath")
+        self.deathrvp = h.RangeVarPlot("deatht_apdeath", beginseg, endseg)
+        self.beginrvp = h.RangeVarPlot("begin_apdeath", beginseg, endseg)
+        self.deathvec = h.Vector()
+        self.beginvec = h.Vector()
         #else:
         #    print (self.nodes)
         #    h.RangeVarPlot(
@@ -53,31 +54,32 @@ class DeathRec:
         i = self.maxsteps
         while i and self.prelifetest():
             i -=1 
-            assert (h.updatet_deathupdate >= 1e9)
-            h.updatet_deathupdate = h.t + self.tinterval
             h.continuerun(h.t + self.tinterval)
         while i and self.lifetest():
             i -= 1
-            h.updatet_deathupdate = h.t + self.tinterval
-            h.flagactive_apdeath = 0
             h.continuerun(h.t + self.tinterval)
         if i == 0:
-            print("U suck")
+            print(f"DeathRec: WARNING: did not detect cell stimulation between t = {self.tstop} and t = {h.t}")
             print(str(h.flagbegin_apdeath)+str(h.flagactive_apdeath))
     def prelifetest(self):
         #return all(
         #            node.begin_apdeath == 0 
         #            for node in self.nodes
         #        )
-        return h.flagbegin_apdeath == 0
+        #return h.flagbegin_apdeath == 0
+        self.beginrvp.to_vector(self.beginvec)
+        return self.beginvec.max() == 0
 
     def lifetest(self):
         #return not all(
         #        bool(node.begin_apdeath) == bool(node.deatht_apdeath)
         #        for node in self.nodes
         #        )
-        return h.flagactive_apdeath
+        self.beginrvp.to_vector(self.beginvec)
+        self.deathrvp.to_vector(self.deathvec)
+        return (self.beginvec.sub(self.deathvec)).max() > 0
     def getdeathtime(self):
-        self.deathtime = max(node.deatht_apdeath for node in self.nodes)
+        self.deathrvp.to_vector(self.deathvec)
+        self.deathtime = self.deathvec.max() 
         return self.deathtime
 
