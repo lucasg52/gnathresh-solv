@@ -60,7 +60,7 @@ class DeathRec:
             h.continuerun(h.t + self.tinterval)
         if i == 0:
             print(f"DeathRec: WARNING: did not detect cell stimulation between t = {self.tstop} and t = {h.t}")
-            print(str(h.flagbegin_apdeath)+str(h.flagactive_apdeath))
+            print(self.lifetest())
     def prelifetest(self):
         #return all(
         #            node.begin_apdeath == 0 
