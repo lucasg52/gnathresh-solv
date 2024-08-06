@@ -11,7 +11,6 @@ from ..tools.checksum import GeomChecksum as Chksum
 from ..visual import movie
 
 
-
 h.load_file("stdrun.hoc")
 
 class NoISCell(BaseExpCell):
@@ -44,10 +43,10 @@ e.m = m = NoISCell(pow(2,-5), 3)
 e.stim = stim = h.IClamp(m.parent(1))
 stim.amp = 100
 stim.dur = 2/16
-stim.delay = 1
+stim.delay = 0.5
 
 
-e.deathrec = e.aprec = deathrec = DeathWatcher(m.main_shaft, m.main_shaft, tstop = 1.5) 
+e.deathrec = e.aprec = deathrec = DeathWatcher(m.main_shaft, m.main_shaft, tstop = 1) 
 
 def proptest(gbar):
     e.prerun(gbar)
