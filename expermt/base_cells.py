@@ -1,38 +1,42 @@
 import numpy as np
 from cells.rincell import RinCell
-from tools.Rin_funcs import new_run, plot_3d, plot_2d, save_data
-from tools.environment import DeathEnviro
-from tools.apdeath import DeathRec
+from Tools.Rin_funcs import gna_run, rin_run, graph
+from Tools.environment import DeathEnviro
+from Tools.apdeath import DeathRec
 from neuron import h
+import time
 from cells.adoptedeq import elength
 h.load_file("stdrun.hoc")
 
-# __MAXGBAR__ = 0.3
-# __tstop__ = h.tstop = 15
 h.dt = pow(2,-6)
 
-
-# m = RinCell(0)
 b = RinCell(1)
-b.setup_stim(0.5)
+b.setup_stim()
 b.side1.L = 3 * elength(b.side1)
 b._normalize()
 
-deathrec = DeathRec(b.main_shaft, b.main_shaft, 6)
-e = DeathEnviro(b, deathrec, b.stim)
+# deathrec = DeathRec(b.main_shaft, b.prop_site, 6)
+# e = DeathEnviro(b, deathrec, b.stim)
+# e.prerun = b.prerun
+
 
 # loc_lst = [i/100 for i in range(0, 100,10)]
-len_lst = [i/100 for i in range(10, 610, 10)]
-lab_lst = [0, 0.05, 0.1, 0.15, 0.2, 0.25,0.3,0.35,0.4,0.45,0.5]
+len_lst = [i/100 for i in range(0, 610, 10)]
+lab_lst = [0,0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,1]
+label_lst = [0.4, 0.8, 1.2, 1.6]
+label_lst2 = [0.0, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0]
+gna_lst = ['base_0_gna_6l_tak3','base_01_gna_6l_tak2','base_02_gna_6l_tak2',
+          'base_03_gna_6l_tak2','base_04_gna_6l_tak2','base_05_gna_6l_tak2','base_06_gna_6l_tak2',
+          'base_07_gna_6l_tak2','base_08_gna_6l_tak2', 'base_09_gna_6l_tak2', 'base_1_gna_tak2']
+gna2_lst = ['base_01_gna_6l_tak2.npy','base_02_gna_6l_tak2.npy','base_03_gna_6l_tak2.npy','base_04_gna_6l_tak2.npy']
+gna3 = ['base_0_gna_6l_tak3.npy','base_05_gna_6l_tak2.npy','base_06_gna_6l_tak2.npy', 'base_07_gna_6l_tak2.npy',
+        'base_08_gna_6l_tak2.npy', 'base_09_gna_6l_tak2.npy', 'base_1_gna_tak2.npy']
 
-def set_Blens(len):
-    if len == 0:
-        b.side1.disconnect()
-        b._normalize()
-
-    else:
-        b.side1.L = len*elength(b.side1)
-        b._normalize()
-
-def connect():
-    b.side1.connect(b.main_shaft(0.6))
+rin_lst = ['base_0_rin_6l_tak3','base_01_rin_6l_tak3','base_02_rin_6l_tak3',
+          'base_03_rin_6l_tak3','base_04_rin_6l_tak3','base_05_rin_6l_tak3','base_06_rin_6l_tak3',
+          'base_07_rin_6l_tak3','base_08_rin_6l_tak3', 'base_09_rin_6l_tak3', 'base_1_rin_tak3']
+rin2_lst = ['base_01_rin_6l_tak3.npy','base_02_rin_6l_tak3.npy','base_03_rin_6l_tak3.npy','base_04_rin_6l_tak3.npy']
+rin3 = ['base_0_rin_6l_tak3.npy','base_05_rin_6l_tak3.npy','base_06_rin_6l_tak3.npy', 'base_07_rin_6l_tak3.npy',
+            'base_08_rin_6l_tak3.npy', 'base_09_rin_6l_tak3.npy', 'base_1_rin_tak3.npy']
+cell_lst = [b for x in range(4)]
+cell2 = [b for y in range(7)]

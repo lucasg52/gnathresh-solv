@@ -1,67 +1,79 @@
-import time
 from neuron import h
 from cells.tapertypes import BaseTaperCell
 from cells import kinetics
 from cells.adoptedeq import elength
-from tools.aprecorder import APRecorder
-from solver.searchclasses import ExpandingSearch
 from cells import adoptedeq as eq
+from Tools.aprecorder import APRecorder
+from solver.searchclasses import ExpandingSearch
 import numpy as np
+import time
 h.load_file("stdrun.hoc")
 
 __tstop__ = h.tstop = 15
 
 class RinCell(BaseTaperCell):
 	def __init__(self, gid):
+		# sets up a function so each cell can have lists to store information, a set dx, a set gna estimate, a name (if you need it for how cells
+		# are called, and a cstie (which is the point on a section where a branch is connected)
 		self.gid = gid
 		self.rin_lst = []
 		self.gna_lst = []
 		self.diff_gna = []
 		self.diff_rin = []
 		self.dx = pow(2,-6)
-		self.est = 0.149525
+		self.est = 0.157
 		self.name = 'base cell'
 		self.csite = 0.6
 		super().__init__(self.dx,3,gid)
+
 	def _normalize(self):
+		#sets up a function to normalize lengths of all branches
 		for sec in self.all[1::]:
 			eq.normalize_dlambda(sec, self.dx)
 		self._taperIS()
 
 	def _taperIS(self):
+		#function that tapers the AIS, it is to be call once when setting up the cell
 		n = self.IS.nseg
 		taperarr = np.linspace(self.IS_diam, self.main_diam, n + 1)
 		for seg, diam in zip(self.IS, taperarr):
 			seg.diam = diam
 
 	def _create_secs(self):
+		#function that adds additional branches to the most basic cell model we have
 		self.parent = h.Section("parent", self)
 		self.side1 = h.Section("side1", self)
+		self.prop_site2 = h.Section("prop_site2", self)
 
 	def _connect(self):
+		#function that connects branches to each other
 		super()._connect()
 		self.parent.connect(self.main_shaft(0.2))
 		self.prop_site.connect(self.main_shaft(1))
+		self.prop_site2.connect(self.prop_site(1))
 		self.side1.connect(self.main_shaft(0.6))
 
 	def _setup_morph(self):
+		#function that sets up morphology (only used for diameter and length)
 		super()._setup_morph()
 		self.parent.diam = self.side1.diam = 0.2
-		self.prop_site.diam = 0.6
+		self.prop_site.diam = self.prop_site2.diam = 0.6
 		self.side1.L = 600
-		self.prop_site.L = 2*elength(self.prop_site)
+		self.prop_site.L = self.prop_site2.L = 2*elength(self.prop_site)
 		self.main_shaft.L = 4*elength(self.main_shaft)
 		self.parent.L = 4 * elength(self.parent)
 
 	def _setup_bioph(self):
+		#funciton that establishes biophysics (Traub parameters and variables)
 		super()._setup_bioph()
-		for sec in [self.IS, self.main_shaft, self.prop_site, self.parent, self.side1]:
+		for sec in [self.IS, self.main_shaft, self.prop_site, self.prop_site2, self.parent, self.side1]:
 			kinetics.insmod_Traub(sec, "axon")
 		kinetics.insmod_Traub(self.soma, "soma")
 		self._normalize()
 		self._taperIS()
 
 	def setgna(self, gna):
+		#function that sets the gna for all non-soma and -AIS sections
 		for sec in self.all:
 			if sec is not self.soma:
 				if sec is not self.IS:
@@ -69,6 +81,7 @@ class RinCell(BaseTaperCell):
 					sec.gbar_kdrTraub = gna
 
 	def getgna(self):
+		#prints out the gna for all non-soma and -AIS sections
 		gna = self.main_shaft.gbar_nafTraub
 		for sec in self.all:
 			if sec is not self.soma:
@@ -76,20 +89,49 @@ class RinCell(BaseTaperCell):
 					assert(sec.gbar_nafTraub == gna)
 		return gna
 
-	def setup_stim(self, loc):
-		self.stim = h.IClamp(self.parent(loc))
+	def setup_stim(self):
+		#must be call in order for the cell to have a stim at 0.5 on the parent branch (all parameters are easily
+		#after the funciton is called
+		self.stim = h.IClamp(self.parent(0.5))
 		self.stim.amp = 0.2
 		self.stim.delay = 5
 		self.stim.dur = 5/16
-		# self.rec = APRecorder(self.prop_site)
+		# self.rec = APRecorder(self.prop_site, ran = 1)
 
+	def prerun(self, gbar):
+		#is necessary for the gna solver
+		self.setgna(gbar)
+		h.finitialize(-69)
+
+	# def get_resting(self, loc):
+	# 	self.stim.amp = 0
+	# 	self.stim.loc(self.main_shaft(loc))
+	# 	h.finitialize(-69)
+	# 	h.continuerun(105)
+	# 	self.base_Rin = self.main_shaft(loc).v
+
+	def getRin(self):
+		#funciton that solvers for the input resistance using NEURON's solver
+		# self.stim.amp = 0
+		imp = h.Impedance()
+		imp.loc(self.main_shaft(0.2))
+		imp.compute(0)
+		return imp.input(self.main_shaft(0.2))
+		# h.finitialize(-69)
+		# h.continuerun(45)
+		# return((self.main_shaft(loc).v - self.base_Rin)/self.stim.amp)
+
+	def set_matx(self, row, col):
+		#function that creates matrices to store cell specfic values
+		self.gna_mtx = np.ones(shape=(row, col))
+		self.rin_mtx = np.ones(shape=(row,col))
 
 	# def proptest(self, gbar):
 	# 	self.setgna(gbar)
 	# 	h.finitialize(-69)
 	# 	h.continuerun(__tstop__)
 	# 	return self.rec.proptest()
-
+	#
 	# def fullsolve(self, a, err=2e-3, acc=pow(2, -30), maxsteps=45, tstop_init=None):
 	# 	global __ERRFLAG__
 	# 	self.stim.amp = 0.2
@@ -115,39 +157,6 @@ class RinCell(BaseTaperCell):
 	# 		__ERRFLAG__ = abs(search.a - a)
 	# 	return search.a
 
-# fullsolve should be external. No reason to have it part of the class itself.
-# recommend using tools.environment, but you can do whatever you want
-# only reason is that it is theoretically easier for others to read, since you are not copying and pasting code
-
-	def set_resting(self, loc):
-		self.stim.amp = 0
-		self.setgna(0)
-		self.stim2 = h.IClamp(self.main_shaft(loc))
-		self.stim2.amp = 0
-		self.stim2.delay = 5
-		self.stim2.dur = 105
-		h.dt = 0.2
-		h.finitialize(-69)
-		h.continuerun(105)
-		self.base = self.main_shaft(loc).v
-
-	def getRin(self, loc):  # Renamed, better to have a method start with a lowercase anyways
-		self.stim2.amp = 0.2
-		self.setgna(0)
-		# imp_geter = h.Impedance()
-		# imp_geter.loc(sec)
-		# imp_geter.compute(0)
-		# return imp_geter.input(sec)
-		h.finitialize(-69)
-		h.continuerun(45)
-		# if (self.main_shaft(loc).v - self.base) == 0:
-		# 	return None
-		# else:
-		return((self.main_shaft(loc).v - self.base)/self.stim2.amp)
-# I suppose this is the only "numerical" part of your class that i would keep inside, only because it fits the name
-
-	def set_matx(self, len):
-		self.mtx = np.zeros(shape=(len, 3))
 	def __repr__(self):
 		return f"Base[{self.gid}]"
 
