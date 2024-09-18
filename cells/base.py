@@ -30,20 +30,37 @@ layerdict = {
     }
 }
 def set_exstim_site(sec):
-    """(Legacy) taken from vs-expcell"""
+    """
+    (Legacy) taken from vs-expcell
+    Will likely be deprecated in future versions
+    """
     stim = h.IClamp(sec(0.5))
     stim.delay = 5
-    stim.amp =  200
+    stim.amp =  0.2
     stim.dur =  0.3125
     return stim
 
 class BaseExpCell(ABC):
-    """Abstract base class for experimental cells
+    """
+    Abstract base class for experimental cells
+        The following parameters are all instantiated as attributes:
         dx          maximum segment length in terms of lambda
         ratio       (legacy) ratio between side branch and parent branch diams
-        gid = 0     gid, required for (useful) hoc/gui interraction
+        gid = 0     gid, required for (useful (but also useless)) hoc/gui interraction
         layer = 0   (legacy) specifies main, IS, and soma diams, as well as ell_c, which is alledgedly the elctrotonic length of the main axon (?)
             see base.layerdict for more details
+
+    Sections:
+        All instnces of the BaseCell have the following h.Section's:
+        
+        soma:       The soma. Should always have nseg = 1
+        IS:         The axon initial segment. By default its geometry is not defined. see cells.tapertypes for predefined IS geometries
+        main_shaft: The section to which side-branches should attach
+        prop_site:  Extends the main_shaft; is the section upon which an APRecorder or any other recorder should be placed
+        
+        additional sections should be specified by redefining self.create_secs
+
+    Note: IS geometry must be defined for a useful experimental cell class.
     """
     def __init__(
             self,
@@ -53,18 +70,18 @@ class BaseExpCell(ABC):
             layer = 0
             ):
         self.gid = gid
-        self.dx = dx # i belive this is the only paramater that really matters (for now)
+        self.dx = dx
         self.ratio = ratio
 
         self.soma = h.Section(          name = "soma"       ,cell = self )
-        self.soma.nseg = 1
+        self.soma.nseg = 1    # prelim. results shows that changing nseg has large effect on gna thresh
         self.IS = h.Section(            name = "IS"         ,cell = self )
         self.main_shaft = h.Section(    name = "main_shaft" ,cell = self )
         self.prop_site = h.Section(     name = "prop_site"  ,cell = self )
 
         self._create_secs()
 
-        self.main_length = 8 # // electronic length of main shaft
+        self.main_length = 8    # electronic length of main shaft
         self.main_diam = 1.2
         self.IS_diam = 2
         self.s_ratio = 11.4
@@ -77,10 +94,15 @@ class BaseExpCell(ABC):
         self._setup_morph()
 
     def _create_secs(self):
+        """Optionally, this method can be defined to specify additional sections. Does nothing"""
         pass
 
     def _setup_morph(self):
-        """setup morphology by initializing diameters, then connecting the segments (see _connect), then normalizing dx"""
+        """
+        Setup morphology by initializing diameters, then connecting the segments with self._connect, then normalizing dx with self._normalize
+        NOTE: Should be executed after self._setup_bioph for correct elength calculations
+        Returns: None
+        """
         self.soma.L = self.soma.diam = self.soma_diam
         self.IS.L = 40 # line 98
         self.main_shaft.L = self.main_length * eq.elength(self.main_shaft, d = self.main_diam)
@@ -88,10 +110,11 @@ class BaseExpCell(ABC):
         self.prop_site.diam = self.main_diam/self.ratio
         self._connect()      
         self._normalize()   # this must be executed after bioph
-
     def _connect(self):
-        """Connect all the sections
-        Returns: None"""
+        """
+        Connect all the sections
+        Returns: None
+        """
         self.IS.connect(self.soma(1))
         self.main_shaft.connect(self.IS(1)) # (line 107)
         self.prop_site.connect(self.main_shaft(1))      # finally where it's supposed to be 
@@ -100,10 +123,12 @@ class BaseExpCell(ABC):
     def _setup_bioph(self):
         """abstract method for initializing biophysical properties. Does nothing"""
 
-    def _normalize(self):   # line 166, not clear why some sections get normalized differently.
-                            # so I am just assuming it is homogenous. also made my own subroutine
-        """calls normalize_dlambda for all sections"""
-        for sec in self.all[1::]:       # list slicing to avoid soma nseg
+    def _normalize(self):
+        """
+        Call eq.normalize_dlambda for all sections, except for soma
+        Returns: None
+        """
+        for sec in self.all[1::]:       # list slicing to avoid changing soma nseg
             normalize_dlambda(sec, self.dx)
 
     @abstractmethod
@@ -113,5 +138,9 @@ class BaseExpCell(ABC):
     all = property(lambda self : self.soma.wholetree(), None)
 
     def clearshape(self):
+        """
+        Calls h.pt3dclear for all sections. Used mainly for debugging
+        Returns: None
+        """
         for sec in self.all:
             h.pt3dclear(sec = sec)
