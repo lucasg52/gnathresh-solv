@@ -1,15 +1,20 @@
+#import necessary libraries, cells, and functions
 from cells.rincell import RinCell, Rin_Ycell, Rin_Trident, Rin_Vcell, Rin_Tcell, Rin_2bbcell
 from cells.adoptedeq import elength
+from cells.expermt.graphing_equiv_cables import grapher
 from neuron import h
 import time
 import numpy as np
 h.load_file("stdrun.hoc")
 
+# file for the Equivalent Cables Experiment
 h.dt = pow(2,-6)
-def lengthS(start, stop, step):
-     return [j / 100 for j in range(start, stop, step)]
-lengths = lengthS(0, 310, 10)
+
+#creating Lists for length and files
+len_lst = [j / 100 for j in range(0, 610, 10)]
 file_lst = ['base_both.out', 'Y_both.out', 'Tri_both.out', 'V_both.out','T_both.out','Phat_both.out','2branch_both.out']
+
+#creating cells
 m = RinCell(0)
 n = Rin_Ycell(1)
 w = Rin_Trident(2)
@@ -21,9 +26,10 @@ b2 = Rin_2bbcell(6)
 b2.csite = 0.7
 gcells = [m,n,w,v,t, m2, b2]
 for cell in gcells:
-    cell.setup_stim(0.5)
-    cell.set_matx(len(lengths))
+    cell.setup_stim()
+    cell.set_matx(len(len_lst))
 
+#function for changing the lengths of each cell
 def setting_length(dau_len):
     if dau_len == 0:
         m.side1.disconnect()
@@ -39,7 +45,7 @@ def setting_length(dau_len):
         for cell in gcells:
             cell._normalize()
 
-    else:
+    else: #all modications to length were made to have the cables be of the same input resistance
         m.side1.L = dau_len*elength(m.side1)
         n.side1.L = (dau_len/2)*elength(n.side1)
         n.dau1.L = (dau_len / 2) * elength(n.dau1)
@@ -58,33 +64,29 @@ def setting_length(dau_len):
         for cell in gcells:
             cell._normalize()
 
-def run(solver, file):
+def run(solver, file_lst): #function for the entire experiment; it requires knowing ehat test to preform and what file to save it to
     start_all = time.perf_counter()
     for i, cell in enumerate(gcells):
         print(f"{cell.name}:")
-        for j, l in enumerate(lengths):
+        for j, l in enumerate(len_lst):
             setting_length(l)
             print(f"i:{l}")
             if l == 0:
                 print("base case")
                 if solver == 'gna':
-                    gna = cell.fullsolve(cell.est, err=1e-4, acc=1e-6)
+                    gna = cell.fullsolve(cell.est, err=1e-4, acc=1e-6) #to use, uncomment the fullsolve function in the RinCell class in the rincell file
                     cell.mtx[j][0]+=l
                     cell.mtx[j][1]+=gna
                 elif solver == 'rin':
-                    cell.set_resting(cell.csite)
                     rin = cell.getRin(cell.csite)
                     cell.mtx[j][0] += l
                     cell.mtx[j][2] += rin
-                    cell.stim2.amp = 0
                 else:
-                    cell.set_resting(cell.csite)
                     gna = cell.fullsolve(cell.est, err=1e-4, acc=1e-6)
                     rin = cell.getRin(cell.csite)
                     cell.mtx[j][0] += l
                     cell.mtx[j][1] += gna
                     cell.mtx[j][2] += rin
-                    cell.stim2.amp = 0
                 if cell == b2:
                     cell.side1.connect(cell.main_shaft(0.5))
                     cell.side2.connect(cell.main_shaft(0.7))
@@ -99,19 +101,25 @@ def run(solver, file):
                     cell.mtx[j][0]+=l
                     cell.mtx[j][1]+=gna
                 elif solver == 'rin':
-                    cell.set_resting(cell.csite)
                     rin = cell.getRin(cell.csite)
                     cell.mtx[j][0] += l
                     cell.mtx[j][2] += rin
-                    cell.stim2.amp = 0
+
                 else:
-                    cell.set_resting(cell.csite)
                     gna = cell.fullsolve(cell.est, err=1e-4, acc=1e-6)
                     rin = cell.getRin(cell.csite)
                     cell.mtx[j][0] += l
                     cell.mtx[j][1] += gna
                     cell.mtx[j][2] += rin
-                    cell.stim2.amp = 0
-        np.save(file[i], cell.mtx)
+
+        np.save(file_lst[i], cell.mtx)
     end_all = time.perf_counter()
     print(f"total time: {(end_all - start_all) / 60} mins")
+
+def main(test):
+    if test == 'rin':
+        run('rin', file_lst)
+    elif test == 'gna':
+        run('gna', file_lst)
+    elif test == 'graph':
+        grapher()

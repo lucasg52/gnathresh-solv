@@ -103,28 +103,18 @@ class RinCell(BaseTaperCell):
 		self.setgna(gbar)
 		h.finitialize(-69)
 
-	# def get_resting(self, loc):
-	# 	self.stim.amp = 0
-	# 	self.stim.loc(self.main_shaft(loc))
-	# 	h.finitialize(-69)
-	# 	h.continuerun(105)
-	# 	self.base_Rin = self.main_shaft(loc).v
-
 	def getRin(self):
 		#funciton that solvers for the input resistance using NEURON's solver
-		# self.stim.amp = 0
 		imp = h.Impedance()
 		imp.loc(self.main_shaft(0.2))
 		imp.compute(0)
 		return imp.input(self.main_shaft(0.2))
-		# h.finitialize(-69)
-		# h.continuerun(45)
-		# return((self.main_shaft(loc).v - self.base_Rin)/self.stim.amp)
 
 	def set_matx(self, row, col):
 		#function that creates matrices to store cell specfic values
 		self.gna_mtx = np.ones(shape=(row, col))
 		self.rin_mtx = np.ones(shape=(row,col))
+		self.mtx = np.ones(shape=(row,col))
 
 	# def proptest(self, gbar):
 	# 	self.setgna(gbar)
@@ -156,6 +146,7 @@ class RinCell(BaseTaperCell):
 	# 	if abs(search.a - a) > 4 * err:
 	# 		__ERRFLAG__ = abs(search.a - a)
 	# 	return search.a
+
 
 	def __repr__(self):
 		return f"Base[{self.gid}]"

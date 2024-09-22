@@ -1,42 +1,56 @@
-import numpy as np
+#import necessary libraries, cells, and functions
 from cells.rincell import RinCell
-from Tools.Rin_funcs import gna_run, rin_run, graph
-from Tools.environment import DeathEnviro
-from Tools.apdeath import DeathRec
+from Tools.Rin_funcs import gna_run, rin_run, graph2
 from neuron import h
-import time
 from cells.adoptedeq import elength
 h.load_file("stdrun.hoc")
 
+#file for the Base Cable Experiment
 h.dt = pow(2,-6)
 
+#setting up the cell
 b = RinCell(1)
 b.setup_stim()
 b.side1.L = 3 * elength(b.side1)
 b._normalize()
 
-# deathrec = DeathRec(b.main_shaft, b.prop_site, 6)
-# e = DeathEnviro(b, deathrec, b.stim)
-# e.prerun = b.prerun
-
-
 # loc_lst = [i/100 for i in range(0, 100,10)]
 len_lst = [i/100 for i in range(0, 610, 10)]
-lab_lst = [0,0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,1]
-label_lst = [0.4, 0.8, 1.2, 1.6]
-label_lst2 = [0.0, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0]
-gna_lst = ['base_0_gna_6l_tak3','base_01_gna_6l_tak2','base_02_gna_6l_tak2',
-          'base_03_gna_6l_tak2','base_04_gna_6l_tak2','base_05_gna_6l_tak2','base_06_gna_6l_tak2',
-          'base_07_gna_6l_tak2','base_08_gna_6l_tak2', 'base_09_gna_6l_tak2', 'base_1_gna_tak2']
-gna2_lst = ['base_01_gna_6l_tak2.npy','base_02_gna_6l_tak2.npy','base_03_gna_6l_tak2.npy','base_04_gna_6l_tak2.npy']
-gna3 = ['base_0_gna_6l_tak3.npy','base_05_gna_6l_tak2.npy','base_06_gna_6l_tak2.npy', 'base_07_gna_6l_tak2.npy',
-        'base_08_gna_6l_tak2.npy', 'base_09_gna_6l_tak2.npy', 'base_1_gna_tak2.npy']
+pos_lst = [j/10 for j in range(0,11,1)] #used to move the location of the sub-branch
+label_lst = [4*k/10 for k in range(0,11,1)] #used when creating the legend for the graph
+cells = [b for z in range(11)]
 
-rin_lst = ['base_0_rin_6l_tak3','base_01_rin_6l_tak3','base_02_rin_6l_tak3',
-          'base_03_rin_6l_tak3','base_04_rin_6l_tak3','base_05_rin_6l_tak3','base_06_rin_6l_tak3',
-          'base_07_rin_6l_tak3','base_08_rin_6l_tak3', 'base_09_rin_6l_tak3', 'base_1_rin_tak3']
-rin2_lst = ['base_01_rin_6l_tak3.npy','base_02_rin_6l_tak3.npy','base_03_rin_6l_tak3.npy','base_04_rin_6l_tak3.npy']
-rin3 = ['base_0_rin_6l_tak3.npy','base_05_rin_6l_tak3.npy','base_06_rin_6l_tak3.npy', 'base_07_rin_6l_tak3.npy',
-            'base_08_rin_6l_tak3.npy', 'base_09_rin_6l_tak3.npy', 'base_1_rin_tak3.npy']
-cell_lst = [b for x in range(4)]
-cell2 = [b for y in range(7)]
+#creating lists for creating and calling files of data:
+#lists for collecting gna
+gna_lst = ['base_0_gna_6l_tak3']
+for i in range(1,10):
+    gna_lst.append(f't_0{i}_gna_6l_tak2')
+gna_lst.append('t_1_gna_6l_tak2')
+
+#list for accessing the gna data
+gna2_lst = ['../modfiles/base_0_gna_6l_tak3.npy']
+for i in range(1,10):
+    gna2_lst.append(f'../modfiles/base_0{i}_gna_6l_tak2.npy')
+gna2_lst.append('../modfiles/t_1_gna_6l_tak2.npy')
+
+#list for collecting rin
+rin_lst = ['base_0_rin_6l_tak3']
+for i in range(1,10):
+    rin_lst.append(f'base_0{i}_rin_6l_tak3')
+rin_lst.append('base_1_rin_6l_tak3')
+
+#list for accessing the rin data
+rin2_lst = ['../modfiles/base_0_rin_6l_tak3.npy']
+for i in range(1,10):
+    rin2_lst.append(f'../modfiles/base_0{i}_rin_6l_tak3.npy')
+rin2_lst.append('../modfiles/base_1_rin_6l_tak34.npy')
+
+def main(test):#runs the experiment; the test input indicates which test you want to do
+    if test == 'gna':
+        gna_run(b, b.side1, b.main_shaft, pos_lst, len_lst, gna_lst)
+    elif test == 'rin':
+        rin_run(b, b.side1, b.main_shaft, pos_lst, len_lst, rin_lst)
+    elif test == 'graph': #the graphing function requires manual modifications reflecting what you want graphed
+        graph2(cells, rin2_lst, gna2_lst)
+        #if graphing with the legend:
+        #graph2(cells, rin2_lst, gna2_lst, lab_lst, 'Base Cables')

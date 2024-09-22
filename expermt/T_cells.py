@@ -1,11 +1,11 @@
-from cells.rincell import Rin_Tcell, RinCell
-from Tools.Rin_funcs import gna_run, rin_run, graph
+#import necessary libraries, cells, and functions
+from cells.rincell import Rin_Tcell
+from Tools.Rin_funcs import gna_run, rin_run, graph2
 from neuron import h
 from cells.adoptedeq import elength
 h.load_file("stdrun.hoc")
 
 # file for the Shifting T cells experiment
-#all functions used come form the Rin_funcs file in tools
 
 __MAXGBAR__ = 0.3
 __tstop__ = h.tstop = 15
@@ -18,27 +18,44 @@ t.side1.L = 3 * elength(t.side1)
 t._normalize()
 
 #creating lists of lengths and locations
-len_lst = [i/100 for i in range(10, 610, 10)]
-lab_lst = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,1]
-label_lst = [0.0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1, 2.4, 2.7, 3.0]
-cell_lst = [t for x in range(len(lab_lst))]
+len_lst = [i/100 for i in range(10, 610, 10)] #used to change the lengths of the sub-branch
+pos_lst = [j/10 for j in range(0,11,1)] #used to move the location of the sub-branch
+label_lst = [3*k/10 for k in range(0,11,1)] #used when creating the legend for the graph
+cells = [t for x in range(len(pos_lst))] #used to iterate through the graphing function
 
 #creating lists for creating and calling .npy files housing the corresponding collected data
-gna_lst = ['t_0_gna_6l_tak4', 't_01_gna_6l_tak4','t_02_gna_6l_tak4',
-          't_03_gna_6l_tak4','t_04_gna_6l_tak4','t_05_gna_6l_tak4','t_06_gna_6l_tak4',
-          't_07_gna_6l_tak4','t_08_gna_6l_tak4', 't_09_gna_6l_tak4', 't_1_gna_6l_tak4']
-gna2_lst = ['t_0_gna_6l_tak4.npy', 't_01_gna_6l_tak4.npy','t_02_gna_6l_tak4.npy','t_03_gna_6l_tak4.npy',
-            't_04_gna_6l_tak4.npy','t_05_gna_6l_tak4.npy','t_06_gna_6l_tak4.npy', 't_07_gna_6l_tak4.npy',
-            't_08_gna_6l_tak4.npy', 't_09_gna_6l_tak4.npy', 't_1_gna_6l_tak4.npy']
-gna3_lst = ['t_0_gna_6l_tak3.npy', 't_01_gna_6l_tak3.npy','t_02_gna_6l_tak3.npy','t_03_gna_6l_tak3.npy',
-            't_04_gna_6l_tak3.npy','t_05_gna_6l_tak3.npy','t_06_gna_6l_tak3.npy', 't_07_gna_6l_tak3.npy',
-            't_08_gna_6l_tak3.npy', 't_09_gna_6l_tak3.npy', 't_1_gna_6l_tak3.npy']
-rin_lst = ['t_0_rin_6l_tak4', 't_01_rin_6l_tak4','t_02_rin_6l_tak4',
-          't_03_rin_6l_tak4','t_04_rin_6l_tak4','t_05_rin_6l_tak4','t_06_rin_6l_tak4',
-          't_07_rin_6l_tak4','t_08_rin_6l_tak4', 't_09_rin_6l_tak4', 't_1_rin_6l_tak4']
-rin2_lst = ['t_0_rin_6l_tak3.npy', 't_01_rin_6l_tak3.npy','t_02_rin_6l_tak3.npy','t_03_rin_6l_tak3.npy',
-            't_04_rin_6l_tak3.npy','t_05_rin_6l_tak3.npy','t_06_rin_6l_tak3.npy', 't_07_rin_6l_tak3.npy',
-            't_08_rin_6l_tak3.npy', 't_09_rin_6l_tak3.npy', 't_1_rin_6l_tak3.npy']
-rin3_lst = ['t_0_rin_6l_tak5.npy', 't_01_rin_6l_tak5.npy','t_02_rin_6l_tak5.npy',
-          't_03_rin_6l_tak5.npy','t_04_rin_6l_tak5.npy','t_05_rin_6l_tak5.npy','t_06_rin_6l_tak5.npy',
-          't_07_rin_6l_tak5.npy','t_08_rin_6l_tak5.npy', 't_09_rin_6l_tak5.npy', 't_1_rin_6l_tak5.npy']
+
+#list for collecting gna
+gna_lst = ['t_0_gna_6l_tak3']
+for i in range(1,10):
+    gna_lst.append(f't_0{i}_gna_6l_tak3')
+gna_lst.append('t_1_gna_6l_tak3')
+
+#list for accessing the gna data
+gna2_lst = ['../modfiles/t_0_gna_6l_tak3.npy']
+for i in range(1,10):
+    gna2_lst.append(f'../modfiles/t_0{i}_gna_6l_tak3.npy')
+gna2_lst.append('../modfiles/t_1_gna_6l_tak3.npy')
+
+
+#list for collecting rin
+rin_lst = ['t_0_rin_6l_tak3']
+for i in range(1,10):
+    rin_lst.append(f't_0{i}_rin_6l_tak3')
+rin_lst.append('t_1_rin_6l_tak3')
+
+#list for accessing the rin data
+rin2_lst = ['../modfiles/t_0_rin_6l_tak3.npy']
+for i in range(1,10):
+    rin2_lst.append(f'../modfiles/t_0{i}_rin_6l_tak3.npy')
+rin2_lst.append('../modfiles/t_1_rin_6l_tak34.npy')
+
+def main(test): #runs the experiment; the test input indicates which test you want to do
+    if test == 'gna':
+        gna_run(t, t.dau1, t.side1, pos_lst, len_lst, gna_lst)
+    elif test == 'rin':
+        rin_run(t, t.dau1, t.side1, pos_lst, len_lst, rin_lst)
+    elif test == 'graph': #the graphing function requires manual modifications reflecting what you want graphed
+        graph2(cells, rin2_lst, gna2_lst)
+        #if graphing with the legend:
+        #graph2(cells, rin2_lst, gna2_lst, lab_lst, 'Shifting T-Cells')

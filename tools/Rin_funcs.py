@@ -5,7 +5,7 @@ import numpy as np
 from cells.adoptedeq import elength
 from Tools.environment import DeathEnviro
 from Tools.apdeath import DeathRec
-from matplotlib import rc as rc
+import matplotlib.axes as ax
 h.load_file("stdrun.hoc")
 
 
@@ -47,7 +47,7 @@ def gna_run(cell, branch, branch2, loc_lst, len_lst, file_lst):
     end_all = time.perf_counter()
     print(f"total time: {(end_all - start_all) / 60} mins")
 
-def rin_run(cell, branch, branch2, loc_lst, len_lst, file_lst, file_lst2):
+def rin_run(cell, branch, branch2, loc_lst, len_lst, file_lst):
     start_all = time.perf_counter()
     # cell.set_matx(len(len_lst),2)
     cell.stim.amp = 0
@@ -72,37 +72,37 @@ def rin_run(cell, branch, branch2, loc_lst, len_lst, file_lst, file_lst2):
                 rin = cell.getRin(0.2)
                 mtx[j, 1] = rin
                 print(rin)
-        np.save(file_lst2[i], mtx)
+        np.save(file_lst[i], mtx)
         # cell.set_matx(len(len_lst),2)
         end = time.perf_counter()
         print(f"cell time: {(end - start)} secs")
     end_all = time.perf_counter()
     print(f"total time: {(end_all - start_all)/60} mins")
 
-def graph(cell_lst, branch,  rin_lst, gna_lst, label_lst, title, leg_title):
+def graph(cell_lst, rin_lst, gna_lst, label_lst, title, leg_title):
     fig, ax = plt.subplot_mosaic([['a)', 'b)'], ['c)', 'c)']],
                        layout='constrained')
     colors = ['black','pink', 'purple', 'blue', 'cyan', 'green', 'orange', 'red', 'brown', 'olive', 'grey']
     for i, cell in enumerate(cell_lst):
         cell.rin_mtx = np.load(rin_lst[i])
         cell.gna_mtx = np.load(gna_lst[i])
-        ax['a)'].plot(np.log10(cell.rin_mtx[:,0]), cell.rin_mtx[:, 1], color= colors[i])
-        ax['b)'].plot(np.log10(cell.gna_mtx[:,0]), cell.gna_mtx[:,1], color= colors[i])
-        ax['c)'].plot(cell.rin_mtx[:,1], cell.gna_mtx[:,1], color= colors[i])
+        ax['a)'].plot(cell.rin_mtx[:,0], cell.rin_mtx[:, 1], color= colors[i])
+        # ax['b)'].plot(cell.gna_mtx[:,0], cell.gna_mtx[:,1], color= colors[i])
+        # ax['c)'].plot(cell.rin_mtx[:,1], cell.gna_mtx[:,1], color= colors[i])
     ax['c)'].legend(labels=label_lst, fontsize = 'large', title = leg_title, loc="lower left", ncols=2)
     fig.suptitle(title)
     ax['a)'].set_title(r"$\text{R}_{\text{in}}$ (M$\Omega$) base on length")
     ax['a)'].set_xlabel("log$_{10}$(side branch length in $\\lambda$)")
     ax['a)'].set_ylabel(r"$\text{R}_{\text{in}}$ (M$\Omega$)")
     ax['a)'].grid()
-    ax['b)'].set_title(r"$\text{g}_{\text{Na}} (\frac{\text{mho}}{\text{cm}^2})$ based on length")
-    ax['b)'].set_xlabel("log$_{10}$(side branch length in $\\lambda$)")
-    ax['b)'].set_ylabel(r"$\text{g}_{\text{Na}} (\frac{\text{mho}}{\text{cm}^2})$")
-    ax['b)'].grid()
-    ax['c)'].set_title(r"$\text{R}_{\text{in}}$ vs $\text{g}_{\text{Na}}$")
-    ax['c)'].set_xlabel(r"$\text{R}_{\text{in}}$ (M$\Omega$)")
-    ax['c)'].set_ylabel(r"$\text{g}_{Na} (\frac{\text{mho}}{\text{cm}^2})$")
-    ax['c)'].grid()
+    # ax['b)'].set_title(r"$\text{g}_{\text{Na}} (\frac{\text{mho}}{\text{cm}^2})$ based on length")
+    # ax['b)'].set_xlabel("log$_{10}$(side branch length in $\\lambda$)")
+    # ax['b)'].set_ylabel(r"$\text{g}_{\text{Na}} (\frac{\text{mho}}{\text{cm}^2})$")
+    # ax['b)'].grid()
+    # ax['c)'].set_title(r"$\text{R}_{\text{in}}$ vs $\text{g}_{\text{Na}}$")
+    # ax['c)'].set_xlabel(r"$\text{R}_{\text{in}}$ (M$\Omega$)")
+    # ax['c)'].set_ylabel(r"$\text{g}_{Na} (\frac{\text{mho}}{\text{cm}^2})$")
+    # ax['c)'].grid()
 
     plt.show()
 
@@ -182,19 +182,25 @@ def rin_run2(cell, loc_lst, len_lst, file1, file2):
     print(f"total time: {(end_all - start_all)/60} mins")
 
 
-def graph2(cell_lst, val_lst1, val_lst2, label_lst, leg_title):
+def graph2(cell_lst, val_lst1, val_lst2):#, label_lst, leg_title):
     colors = ['black','red', 'purple', 'blue', 'cyan', 'green', 'orange', 'pink', 'brown', 'olive', 'grey']
     for i, cell in enumerate(cell_lst):
-        mtx = np.load(val_lst2[i])
-        # mtx2 = np.load(val_lst2[i])
-        plt.plot(np.log10(mtx[:,0]), mtx[:,1], color= colors[i])
-    # plt.legend(labels=label_lst, title = leg_title, loc="lower left", ncols=2)
-    # plt.title(r"$\text{R}_{\text{in}}$ (M$\Omega$) Base on Length [T Cells]")
-    plt.xlabel("log$_{10}$(side branch length in $\\lambda$)")
-    # plt.ylabel(r"$\text{R}_{\text{in}}$ (M$\Omega$)")
+        # old = np.load(val_lst2[i])
+        # row = [0, 0.15697349]
+        mtx2 = np.load(val_lst2[i])#np.vstack((row, old))
+        old_rin = np.load(val_lst1[i])
+        row2 = [0, 102.94759]
+        mtx = np.vstack((row2, old_rin))#np.load(val_lst1[i]) #
+        plt.plot((mtx[:,0]), mtx[:,1], color= colors[i])
+
+    plt.title(r"$\text{R}_{\text{in}}$ Based on Length")
+    plt.xlabel("Side Branch Length ($\\lambda$)")
+    plt.ylabel(r"$\text{R}_{\text{in}}$ (M$\Omega$)")
     plt.grid()
-    # plt.title(r"$\text{g}_{\text{Na}} (\frac{\text{mho}}{\text{cm}^2})$ Based on Length [Base Cables]")
-    plt.ylabel(r"$\text{g}_{\text{Na}} (\frac{\text{mho}}{\text{cm}^2})$")
-    # plt.title(r"$\text{R}_{\text{in}}$ vs $\text{g}_{\text{Na}}$ [Base Cells]")
+    # plt.title(r"$\bar{\text{g}}_{\text{Na}}$ Based on Length")
+    # plt.ylabel(r"$\bar{\text{g}}_{\text{Na}} (\frac{\text{mho}}{\text{cm}^2})$")
+    # plt.title(r"$\text{R}_{\text{in}}$ vs $\bar{\text{g}}_{\text{Na}}$")
     # plt.xlabel(r"$\text{R}_{\text{in}}$ (M$\Omega$)")
+    # plt.legend(labels=label_lst, fontsize='large', title=leg_title,
+    #            bbox_to_anchor=(1.5, 1.05), loc="upper right", ncols=2, fancybox=True)
     plt.show()
