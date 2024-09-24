@@ -2,3 +2,4 @@
 - Setup /enviro directory for base "environment" classes
   - move current environment classes into there, but keep legacy symbols in the tools.environment
   - create specification for R_in calculation environment
+- Explore delay curves a little more
