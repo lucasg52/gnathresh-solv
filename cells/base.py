@@ -45,20 +45,20 @@ class BaseExpCell(ABC):
     Abstract base class for experimental cells
         The following arguments are all attributes:
         dx          maximum segment length in terms of lambda
-        ratio       (legacy) ratio between side branch and parent branch diams
+        ratio       (legacy) ratio between side branch and parent branch diameters
         gid = 0     gid, required for (useful (but also useless)) hoc/gui interraction
         layer = 0   (legacy) specifies main, IS, and soma diams, as well as ell_c, which is alledgedly the elctrotonic length of the main axon (?)
             see base.layerdict for more details
 
     Sections:
-        All instnces of the BaseCell have the following h.Section's:
+        All instances of the BaseCell have the following h.Section's:
         
-        soma:       The soma. Should always have nseg = 1
-        IS:         The axon initial segment. By default its geometry is not defined. see cells.tapertypes for predefined IS geometries
+        soma:       The soma should always have nseg = 1
+        IS:         The axon initial segment: By default its geometry is not defined. See cells.tapertypes for predefined IS geometries
         main_shaft: The section to which side-branches should attach
-        prop_site:  Extends the main_shaft; is the section upon which an APRecorder or any other recorder should be placed
+        prop_site:  Extends the main_shaft; it is the section upon which an APRecorder or any other recorder should be placed
         
-        additional sections should be specified by redefining self.create_secs
+        additional sections should be specified by redefining self._create_secs
 
     Note: IS geometry must be defined for a useful experimental cell class.
     """
@@ -70,8 +70,9 @@ class BaseExpCell(ABC):
             layer = 0
             ):
         self.gid = gid
-        self.dx = dx
-        self.ratio = ratio
+        self.dx = dx #We suggest a dx of pow(2,-6); it only affects the normalization of the cell
+        self.ratio = ratio #represents ratio between the diameter of the parent branch and the main_shaft
+                #it won't do anything after the cell is instantiated
 
         self.soma = h.Section(          name = "soma"       ,cell = self )
         self.soma.nseg = 1    # prelim. results shows that changing nseg has large effect on gna thresh
@@ -81,7 +82,7 @@ class BaseExpCell(ABC):
 
         self._create_secs()
 
-        self.main_length = 8    # electronic length of main shaft
+        self.main_length = 8    # electrotonic length of main shaft
         self.main_diam = 1.2
         self.IS_diam = 2
         self.s_ratio = 11.4
