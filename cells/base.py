@@ -43,7 +43,7 @@ def set_exstim_site(sec):
 class BaseExpCell(ABC):
     """
     Abstract base class for experimental cells
-        The following parameters are all instantiated as attributes:
+        The following arguments are all attributes:
         dx          maximum segment length in terms of lambda
         ratio       (legacy) ratio between side branch and parent branch diams
         gid = 0     gid, required for (useful (but also useless)) hoc/gui interraction
