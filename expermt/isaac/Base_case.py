@@ -42,13 +42,16 @@ def set_ELen(section, length, dx):
     #   print(Lambda)
 
 def collect_gna():
-    lst = []
+    gna_arr = []
+    dist_arr = []
     gna = fullsolve()
     for seg in the_cell.main_shaft:
+        dist_arr.append(seg.x * the_cell.main_shaft.L/elength(the_cell.main_shaft))
         the_cell.prop_site.connect(seg)
         gna = fullsolve()
-        lst.append(gna)
-    return lst
+        gna_arr.append(gna)
+        the_cell.prop_site.disconnect()
+    return dist_arr, gna_arr
 
 
 class Cell(BaseTaperCell):
@@ -57,7 +60,7 @@ class Cell(BaseTaperCell):
         self._setup_exp()
     pass
 
-dx = 0.1
+dx = 0.1 #pow(2,-5)
 ratio = 3
 the_cell = Cell(dx,ratio)
 set_ELen(the_cell.main_shaft, 4, dx)
@@ -67,10 +70,11 @@ stim = h.IClamp(the_cell.prop_site(0.5))
 stim.amp = 200 #nA
 stim.delay = 5 #ms
 stim.dur = 5/16 #ms
-lst_of_gnat = collect_gna()
-
-node_lst = [i for i in range(0,the_cell.main_shaft.nseg)]
-plt.plot(node_lst, lst_of_gnat)
-plt.xlabel("Segment connected along main shaft")
+dist_arr, gna_arr = collect_gna()
+print(dist_arr)
+print(gna_arr)
+# node_lst = [i for i in range(0,the_cell.main_shaft.nseg)]
+# plt.plot(*lst_of_gnat)
+plt.xlabel("Lambda")
 plt.ylabel("GNA Threshold due to distance from propagation site")
-plt.show()
+# plt.show()
