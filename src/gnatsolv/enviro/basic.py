@@ -1,43 +1,10 @@
 import time
-from abc import ABC, abstractmethod
 from neuron import h
-from .aprecorder import APRecorder
+from ..tools.aprecorder import APRecorder
 from ..solver.searchclasses import ExpandingSearch
+from .base import AbstractEnviro
 
-class AbstractEnviro(ABC):
-    def __init__(self, m, aprec, stim, dt = pow(2,-6), **kwargs):
-        self.m = m
-        self.aprec = aprec
-        self.stim = stim
-        self.dt = dt
-        self._init_options(**kwargs)
-
-    @abstractmethod
-    def _init_options(self, **kwargs):
-        '''
-        initialize the environment's options which are attributes in ALL CAPS
-            Options are things that the user may want to change on the fly in an interactive terminal
-            Otherwise they should be configurable via class inheretance (redefining methods)
-        '''
-        pass
-
-    #def _setup(self):
-    #     
-    def set_gbar(self, gbar):
-        for sec in self.m.soma.wholetree():
-            try:
-                sec.gbar_nafTraub = gbar
-                sec.gbar_kdrTraub = gbar
-            except AttributeError:
-                pass
-
-    @abstractmethod
-    def fullsolve(self):
-        '''solve for gNa_Thresh given the current state of the environment'''
-        pass
-
-
-class Environment(AbstractEnviro):
+class BasicEnviro(AbstractEnviro):
     '''
     A tool for setting up a pretty good simulation environment, similar to the one I described 
     last monday
@@ -184,24 +151,4 @@ class Environment(AbstractEnviro):
         return 0
     
 
-class DeathEnviro(Environment):
-    #__doc__ = AbstractEnviro.__doc__ + "\nDue to using a deathrec, this is unable to detect double-propagations"
-    def __init__(self, m, deathrec, stim, **kwargs):
-        super().__init__(m, deathrec, stim, **kwargs)
-        self.deathrec = self.aprec # simply realiasing it in the args and attributes
-        del self.TSTOP
 
-    def proptest(self, gbar):
-        self.prerun(gbar)
-        self.deathrec.run()
-        return self.deathrec.proptest()
-
-    def fullsolve(self, *args, maxsteps = 45):
-        return(super().fullsolve(*args, maxsteps = maxsteps, tstop_init = 0))
-
-    def fullsolveiter(self, search, tstop, acc):
-        if search.searchstep():
-            return 1
-        if search.hi - search.lo <= acc: # NOTE: unable to detect double propagations
-            return 2
-        return 0
