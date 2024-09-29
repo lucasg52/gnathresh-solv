@@ -1,17 +1,5 @@
-
-Lucas:
-  - Reading old plaintext files from Beloit 2018, loading into arrays and whatnot
-  	--Done.
-  - Visualization for old data from Beloit 2018
-  	--Done.
-  - Get correct parameters for model
-    --Done. We will not be using all of them anyways.
-  - Create standard environment for interractive commandline simulation (centralized codebase, better IDLE interraction)
-    - Good commenting and stuff
-      - Partially done
-    - centralized codebase
-      - Partially done by making a package
-    - Inhereted dir for cell subclasses
-  - Eliminate transcribed dir
-    - Partially done, just have to decide what do do with the body.
-
+- Inhereted dir for cell subclasses
+- Setup /enviro directory for base "environment" classes
+  - move current environment classes into there, but keep legacy symbols in the tools.environment
+  - create specification for R_in calculation environment
+- Explore delay curves a little more

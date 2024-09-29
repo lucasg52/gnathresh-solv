@@ -111,9 +111,6 @@ class ExpCell_notaper(BaseExpCell):
 
 
 class BaseTaperCell(BaseExpCell):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.soma.nseg = 1
     def _normalize(self):
         for sec in self.all[1::]:
             eq.normalize_dlambda(sec, self.dx)
