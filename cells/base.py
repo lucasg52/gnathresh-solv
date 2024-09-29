@@ -70,6 +70,7 @@ class BaseExpCell(ABC):
             layer = 0
             ):
         self.gid = gid
+
         self.dx = dx #We suggest a dx of pow(2,-6); it only affects the normalization of the cell
         self.ratio = ratio #represents ratio between the diameter of the parent branch and the main_shaft
                 #it won't do anything after the cell is instantiated
