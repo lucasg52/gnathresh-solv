@@ -53,7 +53,7 @@ class BaseExpCell(ABC):
             layer = 0
             ):
         self.gid = gid
-        self.dx = dx # i belive this is the only paramater that really matters (for now)
+        self.dx = dx # I belive this is the only paramater that really matters (for now)
         self.ratio = ratio
 
         self.soma = h.Section(          name = "soma"       ,cell = self )

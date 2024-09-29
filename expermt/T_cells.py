@@ -1,21 +1,21 @@
+# file for the Shifting T cells experiment
+
 #import necessary libraries, cells, and functions
 from cells.rincell import Rin_Tcell
 from Tools.Rin_funcs import gna_run, rin_run, graph2
-from neuron import h
 from cells.adoptedeq import elength
+from neuron import h
 h.load_file("stdrun.hoc")
 
-# file for the Shifting T cells experiment
-
-__MAXGBAR__ = 0.3
-__tstop__ = h.tstop = 15
-h.dt = pow(2,-6)
+__MAXGBAR__ = 0.3 #the solver can't look for a gna above
+__tstop__ = h.tstop = 15 #miliseconds; solver adjusts this to account for delay
+h.dt = pow(2,-6) #time step
 
 #setting up the cell
-t = Rin_Tcell(1)
-t.setup_stim()
-t.side1.L = 3 * elength(t.side1)
-t._normalize()
+t = Rin_Tcell(1) #creates a cell
+t.setup_stim() #adds a stimulator and recorder
+t.side1.L = 3 * elength(t.side1) #sets the side branch length to 3 lamdba
+t._normalize() #normalizes the side branch
 
 #creating lists of lengths and locations
 len_lst = [i/100 for i in range(10, 610, 10)] #used to change the lengths of the sub-branch
