@@ -1,7 +1,7 @@
 from neuron import h
-from ..cells.base import BaseExpCell as Base
-from ..cells import kinetics as kin
-from ..tools import environment as e
+from gnatsolv.cells.base import BaseExpCell as Base
+from gnatsolv.cells import kinetics as kin
+from gnatsolv.tools import environment as e
 from matplotlib import pyplot as plt
 import numpy as np
 import time
