@@ -1,6 +1,6 @@
-from ..cells.base import BaseExpCell
+from gnatsolv.cells.base import BaseExpCell
 from neuron import h
-from ..cells import kinetics as kin
+from gnatsolv.cells import kinetics as kin
 import time
 h.load_file("stdrun.hoc")
 class StressCell(BaseExpCell):
