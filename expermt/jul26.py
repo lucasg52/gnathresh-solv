@@ -1,14 +1,14 @@
 from neuron import h
 import numpy as np
 from matplotlib import pyplot as plt
-from ..cells.base import BaseExpCell
-from ..tools.apdeath import DeathRec as DeathWatcher
-from ..cells import kinetics as kin
-from .. import eq
-from ..tools.environment import DeathEnviro
-from ..tools.checksum import GeomChecksum as Chksum
+from gnatsolv.cells.base import BaseExpCell
+from gnatsolv.tools.apdeath import DeathRec as DeathWatcher
+from gnatsolv.cells import kinetics as kin
+from gnatsolv import eq
+from gnatsolv.tools.environment import DeathEnviro
+from gnatsolv.tools.checksum import GeomChecksum as Chksum
 #from ..tools.aprecorder import APRecorder
-from ..visual import movie
+from .visual import movie # not sure what to do with the visual dir
 
 
 h.load_file("stdrun.hoc")

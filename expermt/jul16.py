@@ -1,7 +1,7 @@
-from ..cells.smartbranch import SmartBranchCell 
-from ..cells.tools import APRecorder
-from ..solver.searchclasses import ExpandingSearch
-from ..cells import adoptedeq as eq
+from gnatsolv.cells.smartbranch import SmartBranchCell 
+from gnatsolv.cells.tools import APRecorder
+from gnatsolv.solver.searchclasses import ExpandingSearch
+from gnatsolv.cells import adoptedeq as eq
 #from ..cells import kinetics as kin
 from neuron import h
 #from matplotlib import pyplot as plt
