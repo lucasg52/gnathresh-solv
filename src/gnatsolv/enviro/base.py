@@ -40,7 +40,7 @@ class AbstractEnviro(ABC):
 
     @abstractmethod
     def fullsolve(self):
-        '''solve for gNa_Thresh given the current state of the environment'''
+        '''solve for gNa_Thresh given the current state of the environment (i.e. cell morphology, paramaters, etc.)'''
         pass
 
 
