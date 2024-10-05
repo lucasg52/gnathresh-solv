@@ -5,15 +5,6 @@ from . import kinetics as kin
 from .tapertypes import BaseTaperCell
 
 class DCell(BaseTaperCell):
-    #class ModList(list):
-    #    def __setnotify(self,f):
-    #        self.__notify = f
-    #    def __getitem__(self, item, *args, **kwargs):
-    #        if isinstance(item, int):
-    #            self.__notify(item)
-    #        else:
-    #            self.__notify(None)
-    #        return super().__getitem__(item, *args, **kwargs)
     def __init__(self, **kwargs):
         super().__init__(pow(2,-5), 3, **kwargs)
         self.lmax = np.ones(4) * 4
