@@ -2,7 +2,10 @@ from .basic import BasicEnviro
 
 class DeathEnviro(BasicEnviro):
     #__doc__ = AbstractEnviro.__doc__ + "\nDue to using a deathrec, this is unable to detect double-propagations"
+    #DeathEnviro: An environment for solving using a DeathRec (AP death recorder)
+    #Unlike BasicEnviro, proptest() automatically waits for membrane activity to die down before halting simulation.
     def __init__(self, m, deathrec, stim, **kwargs):
+        #NOTE: second argument is not an APRecorder anymore
         super().__init__(m, deathrec, stim, **kwargs)
         self.deathrec = self.aprec # simply realiasing it in the args and attributes
         del self.TSTOP  # simulation stops automatically based on channel activity
