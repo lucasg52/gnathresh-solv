@@ -6,10 +6,6 @@ from .base import AbstractEnviro
 
 class BasicEnviro(AbstractEnviro):
     '''
-    A tool for setting up a pretty good simulation environment, similar to the one I described 
-    last monday
-    That is, a tool to set up a gnathresh-solving environment that will automatically adjust tstop 
-    
     ### Options ###
     
     SHAPECONFIG = None      # determine a function for specificing pt3d info at each solve 
