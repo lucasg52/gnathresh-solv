@@ -30,3 +30,12 @@ class GeomChecksum:
         return ret
     def digest(self):
         return __md5__(b''.join(self.hasharr)).digest()
+
+class GeomChecksum2(GeomCheckSum):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.branchstruct = None
+
+    def genhasharr(self, cell = None):
+        pass
+    #WIP
