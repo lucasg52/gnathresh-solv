@@ -31,11 +31,19 @@ class GeomChecksum:
     def digest(self):
         return __md5__(b''.join(self.hasharr)).digest()
 
-class GeomChecksum2(GeomCheckSum):
+    @classmethod
+    def treechecksum(cls, rootsec):
+        ssum = secchecksum(rootsec)
+        children = np.array(rootsec.children())
+        hashes = np.array(
+                [secchecksum(sec) for sec in children])
+        hasharr = np.stack((children, hashes), axis = -1)
+        return hasharr, ssum
+
+class GeomChecksum2(GeomChecksum):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.branchstruct = None
 
     def genhasharr(self, cell = None):
         pass
-    #WIP
