@@ -2,11 +2,11 @@ import numpy as np
 from .base import BaseExpCell
 from . import adoptedeq as eq
 from . import kinetics as kin
-from .taperedsection import TaperedSection
-from .tools import APRecorder
+from ..tools.aprecorder import APRecorder
 """
 This file specifies two cell types with differing AIS: the 3dtaper (which uses TaperedSec to 
-get a precise representation, and a cell with an IS that is just a uniform cylinder"""
+get a precise representation, and a cell with an IS that is just a uniform cylinder
+"""
 
 class ExpCell_notaper(BaseExpCell):
     """
@@ -27,7 +27,7 @@ class ExpCell_notaper(BaseExpCell):
                  layer = layer)
         #self.IS_1 = h.Section(name = "IS[1]", cell = self)
     def __repr__(self):
-        return("ExpCell_notaper[{}]".format(self.gid) )
+        return(f"ExpCell_notaper[{self.gid}]")
     def _setup_morph(self):
         super()._setup_morph()
         self.IS.diam = self.IS_diam # ?
