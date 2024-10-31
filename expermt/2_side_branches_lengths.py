@@ -9,19 +9,22 @@ import progressbar
 h.load_file("stdrun.hoc")
 
 # bar = progressbar.ProgressBar()
+
+
 def collect_gna(cell, e, est):
 
     mtx = np.zeros((cell.main_shaft.nseg,2))
     start = time.perf_counter()
-    for x in tqdm(cell.iter_dist(1)):
+    for x in tqdm(cell.iter_length(1)):
         gna_lst = []
         # print(f"NEW SPOT: b1 seg = {x}")
-        for y in tqdm(cell.iter_dist(2)):
+        for y in tqdm(cell.iter_length(2)):
             time.sleep(0.1)
+            # h.topology()
             # print(f"NEW SPOT: seg = {y}")
             gna = e.fullsolve(est, 1e-4, 1e-9)
             gna_lst.append(gna)
-            est = gna - 0.02
+            est = gna
             # print(f"gna for seg {x} = {gna}")
             # print(x*4+0.2)
             # bar.update(i)
@@ -35,6 +38,8 @@ def main(est):
     cell.l[3] = 0  # sets lengths of unneeded branches to 0
     cell.l[1] = cell.l[2] =4.0
     cell.update_geom(lengths=[1,2,3])  # removes the side branches we don't want
+    cell.side[1].connect(cell.main_shaft(0.4))
+    cell.side[2].connect(cell.main_shaft(0.6))
 
     # h.topology() #checks the topology of the cell
     stim = h.IClamp(cell.parent(0.5)) #setups the stimulator
@@ -49,7 +54,9 @@ def main(est):
     est = est  # estimate for initial gna
 
     data = collect_gna(cell,e, est)
-    np.save('2_side_branch_distances_gna_matrix',data)
+    np.save('2_side_branches_lengths_gna_matrix',data)
+    # h.psection(sec=cell.side[1])
+    # print(cell.side[1].parentseg())
 
 main(0.15816538)
 # main(0.45)
