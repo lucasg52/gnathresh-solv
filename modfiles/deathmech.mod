@@ -1,3 +1,11 @@
+TITLE Channel activity death detection
+
+COMMENT
+	By Lucas Swanson
+	of Ripon College '27
+	Written for SOAR 2024
+ENDCOMMENT
+
 NEURON {
 	SUFFIX apdeath
 	RANGE deatht, begin
@@ -15,6 +23,7 @@ ASSIGNED{
 	deatht (ms)
 	begin (flag)
 }
+
 INITIAL{
 	deatht = 0
 	begin = 0
@@ -30,9 +39,4 @@ AFTER SOLVE{
 			deatht = t
 		}
 	}
-	
 }
-
-
-
- 
