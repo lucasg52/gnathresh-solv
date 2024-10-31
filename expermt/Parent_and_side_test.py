@@ -1,4 +1,5 @@
 import numpy as np
+from gnatsolv.eq import elength
 from gnatsolv.cells.dcell import DCell
 from gnatsolv.tools.environment import DeathEnviro
 from gnatsolv.tools.apdeath import DeathRec
@@ -6,23 +7,32 @@ from neuron import h
 import time
 h.load_file("stdrun.hoc")
 
-def collect_gna(cell, e, est):
+#       PARENT AND SIDE BRANCH EXPERIMENT        #
+#   NOTE: add brief description
+def collect_gna(e, est, err):
+    cell = e.m
+    # NOTE: should we change this naming convention (e.cell instead of e.m)?
+    main_elength = elength(cell.main_shaft)
     mtx = np.zeros((cell.main_shaft.nseg,2))
     start = time.perf_counter()
     for i,x in enumerate(cell.iter_dist(1)):
         print(f"NEW SPOT: seg = {x}")
-        gna = e.fullsolve(est, 1e-4, 1e-9)
-        mtx[i,0]=x*4
-        mtx[i,1]=gna
-        est = gna - 0.02
-        print(f"gna for seg {x} = {gna}")
-        # print(x*4+0.2)
+        # binary search for g_Na,Thresh given current goemetry, up to 9 digits of accuracy
+        gna = e.fullsolve(est, err, 1e-9)
+        mtx[i,0] = x * main_elength
+        mtx[i,1] = gna
+        # guess subsequent error based on previous error
+        err = (abs(est - gna) + err)/2  
+        # update the estimate to ensure faster convergence of subsequent binary search
+        est = gna
+        print(f"g_Na,Thresh for x = {x}: {gna}")
     end = time.perf_counter()
-    print(f"time = {end - start}")
+    print(f"collect_gna: total runtime = {end - start}")
     return mtx
 
-def main(est):
-    cell = DCell()  # set up cell
+def main():
+    cell = DCell()  # create cell
+    cell.dx = pow(2,-4) # reduce spacial discretization (ensures faster runtime, but reduces numerical accuacy)
     cell.l[2] = cell.l[3] = 0  # sets lengths of unneeded branches to 0
     cell.l[1]=4.0
     cell.update_geom(lengths=[1,2, 3])  # removes the side branches we don't want
@@ -36,11 +46,13 @@ def main(est):
     # set up death recorder and gna solver
     deathrec = DeathRec(cell.main_shaft, cell.main_shaft, 1)
     e = DeathEnviro(cell, deathrec, stim)
-    e.PRINTTIME = True #traacks how long it takes
-    # est = est  # estimate for initial gna
+    e.PRINTTIME = True # enable solver to print runtime of each individual solve
+ 
+    initial_estimate = 0.15
+    initial_error = 0.05
 
-    data = collect_gna(cell,e, est)
+    data = collect_gna(
+            e,
+            initial_estimate, initial_error
+            )
     np.save('parent_and_side_test_data',data)
-
-main(0.15816538)
-# main(0.45)
