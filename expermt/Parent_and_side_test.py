@@ -22,7 +22,7 @@ def collect_gna(e, est, err):
         mtx[i,0] = x * main_elength
         mtx[i,1] = gna
         # guess subsequent error based on previous error
-        err = (abs(est - gna) + err)/2  
+        err = (abs(est - gna) + err)/2
         # update the estimate to ensure faster convergence of subsequent binary search
         est = gna
         print(f"g_Na,Thresh for x = {x}: {gna}")
@@ -47,7 +47,7 @@ def main():
     deathrec = DeathRec(cell.main_shaft, cell.main_shaft, 1)
     e = DeathEnviro(cell, deathrec, stim)
     e.PRINTTIME = True # enable solver to print runtime of each individual solve
- 
+
     initial_estimate = 0.15
     initial_error = 0.05
 
@@ -56,3 +56,6 @@ def main():
             initial_estimate, initial_error
             )
     np.save('parent_and_side_test_data',data)
+
+if __name__ == '__main__':
+    main()
