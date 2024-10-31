@@ -1,7 +1,6 @@
 import time
 from neuron import h
 from .aprecorder import APRecorder
-# from .oldapdeath import DeathTester
 
 class DeathRec:
     def __init__(

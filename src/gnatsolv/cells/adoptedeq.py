@@ -1,41 +1,9 @@
 # Lucas Swanson -- Ripon College '24
-""" adopt(ed )eq(uations)
-this file contains all equations that come from cited sources, old code, etc...
-It just contains equations, okay?
+"""
+adopt(ed )eq(uations)
+this file contains all equations pretaining to electrotonic length (aka lambda), and geometric ratio.
 """
 from math import  sqrt as __sqrt__
-
-def alphagammataper(
-        IS_diam,
-        s_ratio,
-        ell_c
-        ):
-    """Legacy equation to get taper dimensions, alledgedly creates a section with electrotonic
-    length ell_c, but I find this hard to believe."""
-    alpha=                          \
-            ((
-                    (__sqrt__(s_ratio)-1)
-                    / (s_ratio-1))
-                ** 4)               \
-            / (25**4
-                * 100 * IS_diam**2)
-
-    gamma=                          \
-            IS_diam**2              \
-            * (s_ratio-1)**2        \
-            / 4
-
-    taper =                         \
-            __sqrt__(
-                - gamma/2
-                + __sqrt__(
-                    alpha**2
-                    * gamma**2
-                    + 4 * alpha * ell_c**4
-                    )
-                / (2*alpha)
-            )
-    return alpha, gamma, taper
 
 def elength(sec, d = None):
     """ // calculate the electrotonic length as given by Tuckwell p. 137 
