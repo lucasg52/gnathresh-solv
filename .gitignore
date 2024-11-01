@@ -21,6 +21,3 @@ __pycache__
 
 *.npy
 # ignore numpy data files
-
-__init__.py
-# ignore empty __init__ files that I create

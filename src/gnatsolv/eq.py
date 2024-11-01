@@ -1,1 +1,1 @@
-from .cells.adoptedeq import alphagammataper, elength, normalize_dlambda, gr
+from .cells.adoptedeq import elength, normalize_dlambda, gr
