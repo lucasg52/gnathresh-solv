@@ -38,8 +38,8 @@ def main(est):
     cell.l[3] = 0  # sets lengths of unneeded branches to 0
     cell.l[1] = cell.l[2] =4.0
     cell.update_geom(lengths=[1,2,3])  # removes the side branches we don't want
-    cell.side[1].connect(cell.main_shaft(0.4))
-    cell.side[2].connect(cell.main_shaft(0.6))
+    cell.side[1].connect(cell.main_shaft(0.2)) #
+    cell.side[2].connect(cell.main_shaft(0.2))
 
     # h.topology() #checks the topology of the cell
     stim = h.IClamp(cell.parent(0.5)) #setups the stimulator
@@ -50,7 +50,7 @@ def main(est):
     # set up death recorder and gna solver
     deathrec = DeathRec(cell.main_shaft, cell.main_shaft, 1)
     e = DeathEnviro(cell, deathrec, stim)
-    e.PRINTTIME = True #traacks how long it takes
+    e.PRINTTIME = True #tracks how long it takes
     est = est  # estimate for initial gna
 
     data = collect_gna(cell,e, est)
