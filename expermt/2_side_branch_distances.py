@@ -9,22 +9,23 @@ import progressbar
 h.load_file("stdrun.hoc")
 
 # bar = progressbar.ProgressBar()
-def collect_gna(cell, e, est):
-
-    mtx = np.zeros((cell.main_shaft.nseg,2))
+def collect_gna(cell, e, est, err):
+    mtx = np.zeros((cell.main_shaft.nseg,cell.main_shaft.nseg))
     start = time.perf_counter()
     for x in tqdm(cell.iter_dist(1)):
         gna_lst = []
         # print(f"NEW SPOT: b1 seg = {x}")
         for y in tqdm(cell.iter_dist(2)):
-            time.sleep(0.1)
             # print(f"NEW SPOT: seg = {y}")
-            gna = e.fullsolve(est, 1e-4, 1e-9)
+            # binary search for g_Na,Thresh given current geometry, up to 9 digits of accuracy
+            gna = e.fullsolve(est, err, 1e-9)
             gna_lst.append(gna)
-            est = gna - 0.02
+            # guess subsequent error based on previous error
+            err = (abs(est - gna) + err) / 2
+            # update the estimate to ensure faster convergence of subsequent binary search
+            est = gna
             # print(f"gna for seg {x} = {gna}")
-            # print(x*4+0.2)
-            # bar.update(i)
+        mtx[x,:]=gna_lst
     end = time.perf_counter()
     print(f"time = {end - start}")
     return mtx
@@ -32,6 +33,8 @@ def collect_gna(cell, e, est):
 def main(est):
 
     cell = DCell()  # set up cell
+    cell.dx = pow(2,-3)
+    cell._normalize()
     cell.l[3] = 0  # sets lengths of unneeded branches to 0
     cell.l[1] = cell.l[2] =4.0
     cell.update_geom(lengths=[1,2,3])  # removes the side branches we don't want
@@ -48,7 +51,13 @@ def main(est):
     e.PRINTTIME = True #traacks how long it takes
     est = est  # estimate for initial gna
 
-    data = collect_gna(cell,e, est)
+    initial_estimate = 0.15
+    initial_error = 0.05
+
+    data = collect_gna(
+        e,
+        initial_estimate, initial_error
+    )
     np.save('2_side_branch_distances_gna_matrix',data)
 
 main(0.15816538)

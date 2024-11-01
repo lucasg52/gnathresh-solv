@@ -1,4 +1,5 @@
 import numpy as np
+from tqdm import tqdm
 from gnatsolv.eq import elength
 from gnatsolv.cells.dcell import DCell
 from gnatsolv.tools.environment import DeathEnviro
@@ -17,7 +18,7 @@ def collect_gna(e, est, err):
     start = time.perf_counter()
     for i,x in enumerate(cell.iter_dist(1)):
         print(f"NEW SPOT: seg = {x}")
-        # binary search for g_Na,Thresh given current goemetry, up to 9 digits of accuracy
+        # binary search for g_Na,Thresh given current geometry, up to 9 digits of accuracy
         gna = e.fullsolve(est, err, 1e-9)
         mtx[i,0] = x * main_elength
         mtx[i,1] = gna
