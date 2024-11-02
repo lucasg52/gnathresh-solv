@@ -9,4 +9,4 @@ Tools are organized into units known as 'environments,' which are classes whose 
 
 The most useful pieces of this repository lie in the /src/gnatsolv/tools and /src/gnatsolv/enviro directories. The code therein can be set up to calculate other forms of propogation threshold just as easily as for calculating g_Na,Thresh.
 
-There are additional tools for checking experimental integrity (checksum.py) and for visualizing membrane activity without generating pt3d geometry data, which is something that affects results (see [issue](about:blank))
+There are additional tools for checking experimental integrity (checksum.py) and for visualizing membrane activity without generating pt3d geometry data, which is something that affects results (see [issue](https://github.com/neuronsimulator/nrn/issues/3171))
