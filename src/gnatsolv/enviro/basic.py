@@ -26,6 +26,8 @@ class BasicEnviro(AbstractEnviro):
     
     MAXGBAR = 0.45          # maximum gbar for search (search will not go above this value)
     
+    MINGBAR = 0.1           # minimum gbar for search (search will not go above this value)
+    
     ### Objects ###
     
     m = None                # the cell to do experiments on
@@ -54,6 +56,7 @@ class BasicEnviro(AbstractEnviro):
                                 # in future iterations this may be depreciated
         self.TSTOPINCREMENT = 3      # increment for increasing tstop
         self.MAXGBAR = 0.45          # maximum gbar for search (search will not go above this value)
+        self.MINGBAR = 0.1
         
         ### Objects ###
         #self.m = None                # the cell to do experiments on
@@ -117,7 +120,9 @@ class BasicEnviro(AbstractEnviro):
             tstop  = tstop_init
         if self.SHAPECONFIG is not None:
             self.SHAPECONFIG()
-        search = ExpandingSearch(a - err, a + err, self.proptest, lim_lo = 0, lim_hi = 0.45)
+        search = ExpandingSearch(
+                a - err, a + err, self.proptest, 
+                lim_lo = self.MINGBAR, lim_hi = self.MAXGBAR)
         for i in range(maxsteps):
             if self.fullsolveiter(search, tstop, acc):
                 break
