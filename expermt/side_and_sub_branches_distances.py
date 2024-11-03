@@ -8,26 +8,34 @@ import time
 h.load_file("stdrun.hoc")
 
 
-def collect_gna(cell, e, est): #collects gna for each geometry by changing the distance of the side branch and the the subbranch
-
-    mtx = np.zeros((cell.main_shaft.nseg,2))
+def collect_gna(e, est, err): #collects gna for each geometry by changing the distance of the side branch and the the subbranch
+    cell = e.m
+    gna_mtx = np.zeros((cell.main_shaft.nseg,cell.main_shaft.nseg))
+    seg_mtx = np.zeros((cell.main_shaft,1))
     start = time.perf_counter()
-    for x in tqdm(cell.iter_dist(1)):
+    for l,m in enumerate(cell.iter_dist(1)):
         gna_lst = []
+        seg_mtx[0,l] = m
+        print(m)
         # print(f"NEW SPOT: b1 seg = {x}")
-        for y in tqdm(cell.iter_dist(3)):
-            time.sleep(0.1)
+
+        for y in cell.iter_dist(3):
             h.topology()
             # print(f"NEW SPOT: seg = {y}")
-            gna = e.fullsolve(est, 1e-4, 1e-9)
+            gna = e.fullsolve(est, err, 1e-9)
             gna_lst.append(gna)
+
+            # guess subsequent error based on previous error
+            err = (abs(est - gna) + err) / 2
+            # update the estimate to ensure faster convergence of subsequent binary search
             est = gna
+
+        gna_mtx[l,:]=gna_lst
+
             # print(f"gna for seg {x} = {gna}")
-            # print(x*4+0.2)
-            # bar.update(i)
     end = time.perf_counter()
     print(f"time = {end - start}")
-    return mtx
+    return gna_mtx, seg_mtx
 
 def main(est):
 

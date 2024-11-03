@@ -13,7 +13,8 @@ h.load_file("stdrun.hoc")
 def collect_gna(e, est, err):
     cell = e.m
     # NOTE: should we change this naming convention (e.cell instead of e.m)?
-    main_elength = elength(cell.main_shaft)
+    main_elength = 4
+    print(main_elength)
     mtx = np.zeros((cell.main_shaft.nseg,2))
     start = time.perf_counter()
     for i,x in enumerate(cell.iter_dist(1)):
