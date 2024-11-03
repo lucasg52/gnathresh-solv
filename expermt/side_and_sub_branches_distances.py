@@ -23,7 +23,7 @@ def collect_gna(e, est, err): #collects gna for each geometry by changing the di
                 [1:-1]
         ):
             cell.side[3].connect(seg)
-            seg_mtx[0,y] = seg.x
+            seg_mtx[0,l] = seg.x
             h.topology()
             # print(f"NEW SPOT: seg = {y}")
             gna = e.fullsolve(est, err, 1e-9)

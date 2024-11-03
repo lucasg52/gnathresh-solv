@@ -3,13 +3,12 @@ from gnatsolv.cells.dcell import DCell
 from gnatsolv.tools.environment import DeathEnviro
 from gnatsolv.tools.apdeath import DeathRec
 from neuron import h
-from tqdm import tqdm
 import time
-import progressbar
+import sys
 h.load_file("stdrun.hoc")
 
-# bar = progressbar.ProgressBar()
-
+fp=open('time_for_2bl.txt','w')
+sys.stdout=fp
 
 def collect_gna(e, est, err):
     cell = e.m
@@ -19,7 +18,7 @@ def collect_gna(e, est, err):
         gna_lst = []
         # print(f"NEW SPOT: b1 seg = {x}")
         for y in cell.iter_length(2):
-            h.topology()
+            # h.topology()
             # print(f"NEW SPOT: seg = {y}")
             gna = e.fullsolve(est, err, 1e-9)
             gna_lst.append(gna)
@@ -36,7 +35,7 @@ def collect_gna(e, est, err):
                 int((cell.lmax[1]-0)/(1*cell.dx))
                 )
     end = time.perf_counter()
-    print(f"time = {end - start}")
+    print(f'Time to complete {end - start}')
     return mtx, len_mtx
 
 def main():
@@ -48,7 +47,7 @@ def main():
     cell.side[1].connect(cell.main_shaft(0.2)) #
     cell.side[2].connect(cell.main_shaft(0.2))
 
-    h.topology() #checks the topology of the cell
+    # h.topology() #checks the topology of the cell
     global stim
     stim = h.IClamp(cell.parent(0.5)) #setups the stimulator
     stim.amp = 0.2 #gives it an amp in mV
@@ -69,8 +68,11 @@ def main():
         initial_estimate, initial_error
     )
     np.save('2_side_branches_lengths_gna_matrix1', gna_data)
-    np.save('side_and_sub_branches_distances_seg_matrix_for_parent1', len_data)
-    # print(f"gna data for 2 branch lengths in 2_side_branches_lengths_gna_matrix1.npy")
-    # print(f"gna data for 2 branch lengths in 2_side_branches_lengths_len_matrix_for_branches1.npy")
+    np.save('2_side_branches_lengths_side_len_matrix1', len_data)
+
+    print(f"gna data for 2 branch lengths in 2_side_branches_lengths_gna_matrix1.npy")
+    print(f"len data for 2 branch lengths in 2_side_branches_lengths_side_len_matrix1.npy")
+
 if __name__ == '__main__':
     main()
+
