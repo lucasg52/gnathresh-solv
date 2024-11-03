@@ -26,7 +26,7 @@ def collect_gna(e, est, err):
             est = gna
             # print(f"gna for seg {x} = {gna}")
         print(gna_lst)
-        mtx[l,:]=gna_lst P
+        mtx[l,:]=gna_lst
     end = time.perf_counter()
     print(f"time = {end - start}")
     return mtx, seg_mtx
