@@ -62,6 +62,7 @@ def main():
     global e
     deathrec = DeathRec(cell.main_shaft, cell.main_shaft, 1)
     e = DeathEnviro(cell, deathrec, stim)
+    e.MINGBAR=0.14
     e.PRINTTIME = True #enable solver to print runtime of each individual solve
 
     initial_estimate = 0.15
