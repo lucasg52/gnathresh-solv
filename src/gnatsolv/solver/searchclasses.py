@@ -68,6 +68,7 @@ class ExpandingSearch(BinSearch):
                 ):
         self.lim_lo = lim_lo
         self.lim_hi = lim_hi
+        self.expandstep = self._expandstep_initial
         super().__init__(lo, hi, propatest, a = a)
 
     def searchstep(self):
@@ -80,21 +81,35 @@ class ExpandingSearch(BinSearch):
         """
         self.hi = min(self.lim_hi, self.hi)
         self.lo = max(self.lim_lo, self.lo)
-        d = self.hi - self.lo
-        if d == 0:
+        if self.hi == self.lo:
             self.a = self.lo
             return True
+        if self.expandstep():
+            self.searchstep = super().searchstep
+            super().searchstep()
+    def _expandstep_initial(self):
+        if not self._expandstep_hi():
+            self.expandstep = self._expandstep_hi
+            return False
+        if not self._expandstep_lo():
+            self.expandstep = self._expandstep_lo
+            return False
+        return True
+    def _expandstep_hi(self):
         if not self.propatest(self.hi):
+            d = self.hi - self.lo
             self.hi += 2 * d
             self.lo += d
             self.a = (self.lo + self.hi) / 2
-        elif self.propatest(self.lo):
+            return False
+        return True
+    def _expandstep_lo(self):
+        if self.propatest(self.lo):
+            d = self.hi - self.lo
             self.lo -= 2 * d
-            self.hi -= d 
+            self.hi -= d
             self.a = (self.lo + self.hi) / 2
-        else:
-            self.searchstep = super().searchstep
-            super().searchstep()
-
+            return False
+        return True
 
 GNASearch = BinSearch       # for legacy code (BinSearch was formally GNASearch)
