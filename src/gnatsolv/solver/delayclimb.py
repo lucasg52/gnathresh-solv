@@ -33,10 +33,8 @@ class DelayClimb:
         self.state = np.nan * np.ones(3)
         # curve is modeled as delay(g) = offset + ln((thresh-g)^power)
         # which is equal to offset + power * ln(thresh-g)
-        self.newtoniters = 2
-        self.safety_factor = 1/8
-        
-        # ada lovelace was the daughter of a poet
+        self.newtoniters = 8
+        self.safety_factor = 1/10
         
         self.pnts = [DelayPnt(*t) for t in startpnts]
         self.pnts.sort()
@@ -103,6 +101,3 @@ class DelayClimb:
                 DelayPnt(nextgna, delay)
                 )
         del self.pnts[0]
-
-
-
