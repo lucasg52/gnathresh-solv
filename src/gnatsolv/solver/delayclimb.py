@@ -59,7 +59,7 @@ def fit_unit_expo(
             )
     def newton(base_est):
         deriv = unit_expo_partialbase(base_est, xtarg)
-        if abs(deriv) < 0.001:
+        if abs(deriv) < pow(2,-50):
             return -1
         return (
                 base_est
@@ -98,7 +98,7 @@ class DelayClimb:
     """
     a DelayClimb search will try to stick to sampling one side of a logarithm curve to find its
     roots.
-    the delay curve is modeled as delay(g) = offset + power * ln(thresh-g)
+    the delay curve is modeled as g_bar(delay) = k*base^delay + thresh
     """
     def __init__(
                  self,
@@ -111,7 +111,6 @@ class DelayClimb:
 
         self.propatest = propatest
 
-        #self.state = np.nan * np.ones(3)
         self.base = 0.5
         self.preverror = 0.25
         # curve is modeled as g_bar(delay) = k*base^delay + thresh
