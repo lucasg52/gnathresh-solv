@@ -8,12 +8,16 @@ from .searchclasses import ExpandingSearch
 #def rangetransform_inv(arr, x):
 #    return (arr[-1] - arr[0]) * x + arr[0]
 def unit_expo(base, x):
-        return (
-                (1 - pow(base, x))
-                / (1 - base)
-                )
+    x = float(x)
+    base = float(base)
+    return (
+            (1 - pow(base, x))
+            / (1 - base)
+            )
 
 def unit_expo_partialbase(base, x):
+    x = float(x)
+    base = float(base)
     return (
                 (
                     (1 - pow(base , x))
@@ -42,7 +46,7 @@ def fit_3pnt_expo(
             )
     base = pow(restrans, 1/x_scale)
     k = y_scale/(pow(base, xarr[2]) - pow(base, xarr[0]))
-    thresh = yarr[0] - k * pow(xarr[0])
+    thresh = yarr[0] - k * pow(base, xarr[0])
     return base, thresh
 
 def fit_unit_expo(
@@ -58,10 +62,11 @@ def fit_unit_expo(
             **kwargs
             )
     def newton(base_est):
+        print(", ".join(["newton", str(base_est), str(type(base_est))]))
         deriv = unit_expo_partialbase(base_est, xtarg)
         if abs(deriv) < pow(2,-50):
             return -1
-        return (
+        return abs(
                 base_est
                 + (
                     ytarg
@@ -71,8 +76,13 @@ def fit_unit_expo(
                 )
     newtguess = 0
     for i in range(maxiters):
-        if search.lo < newtguess < search.hi:
+        d = search.hi-search.lo
+        if search.lo + d/3 < newtguess < search.hi - d/3:
+            print("newtoj winzz")
             newtguess = newton(newtguess)
+            if newtguess < 0:
+                print("nvm xd")
+                newtguess = -1
         else:
             if search.searchstep():
                 raise ValueError("search failed", {"search" : (search.lo, search.hi), "newtguess" : newtguess, "i" : i})
@@ -129,8 +139,8 @@ class DelayClimb:
     def fit(self, fititers = None):
         if fititers is None:
             fititers = self.fititers
-        gna = np.array(p.gna for p in self.pnts)
-        delay = np.array(p.delay for p in self.pnts)
+        gna = np.array([p.gna for p in self.pnts])
+        delay = np.array([p.delay for p in self.pnts])
         newbase, thresh = fit_3pnt_expo(
                 fititers,
                 delay, gna,
