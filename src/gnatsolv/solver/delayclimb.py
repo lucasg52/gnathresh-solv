@@ -156,7 +156,7 @@ class DelayClimb:
         prop, delay = self.propatest(gna)
         if prop:
             print("DelayClimb: Warning: wasted an iteration - safety_factor may be to small")
-            return self.get_nonprop_result((gna - self.maxgna)/2, depth + 1)
+            return self.get_nonprop_result((gna + self.maxgna)/2, depth + 1)
         return gna, delay
 
 
