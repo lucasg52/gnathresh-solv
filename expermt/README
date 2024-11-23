@@ -1,5 +1,3 @@
-This directory contains dated entries of exploration of the neuron library/ playing around with the library
-
-Not recommended that anyone go thru to seriously analyze code, it serves mainly to give some dea of what I have been playing with.
-
-Soon, this directory will only contain selected scripts for generating specific datasets & graphs
+2_side_branch_distances changes the distances of two side branches from the AIS and records the gna.
+2_side_branches_lengths changes the lengths of the two side branches situated at 1.6 and 2.4 lambda, respectively. Gna is recorded for each combination.
+side_and_sub_branches_distances changes the distance a side branch and a sub branch are from the AIS. A second side branch does not exist. The lengths are 4 lambdas each. Gna is recorded at each combination.
