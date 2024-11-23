@@ -62,7 +62,6 @@ def fit_unit_expo(
             **kwargs
             )
     def newton(base_est):
-        print(", ".join(["newton", str(base_est), str(type(base_est))]))
         deriv = unit_expo_partialbase(base_est, xtarg)
         if abs(deriv) < pow(2,-50):
             return -1
@@ -78,10 +77,8 @@ def fit_unit_expo(
     for i in range(maxiters):
         d = search.hi-search.lo
         if search.lo + d/3 < newtguess < search.hi - d/3:
-            print("newtoj winzz")
             newtguess = newton(newtguess)
             if newtguess < 0:
-                print("nvm xd")
                 newtguess = -1
         else:
             if search.searchstep():
