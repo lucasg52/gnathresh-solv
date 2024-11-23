@@ -1,6 +1,7 @@
 import unittest
 from gnatsolv.tools import checksum
 from gnatsolv.cells.base import BaseExpCell
+from gnatsolv.cells.kinetics import insmod_Traub
 from neuron import h
 
 def TestSec():
@@ -10,7 +11,8 @@ def TestSec():
     return s
 class TestCell(BaseExpCell):
     def _setup_bioph(self):
-        pass
+        for sec in [self.main_shaft, self.soma, self.prop_site, self.IS]:
+            insmod_Traub(sec, forsec = "axon")
 
     def _setup_morph(self):
         self.IS.diam = self.main_diam
@@ -19,7 +21,7 @@ class TestCell(BaseExpCell):
     def __repr__(self):
         return "TestCell"
 
-class CheckSumTest(unittest.testcase):
+class CheckSumTest(unittest.TestCase):
     def test_sec_basic(self):
         mysec = TestSec()
         mysec(0.1).diam = 2
@@ -29,7 +31,7 @@ class CheckSumTest(unittest.testcase):
         mysec(0.5).diam = 1
         sum3 = checksum.secchecksum(mysec)
         self.assertEqual(sum1, sum3)
-        self.assertUnequal(sum1, sum2)
+        self.assertNotEqual(sum1, sum2)
     def test_cell_basic(self):
         cell = TestCell(dx = pow(2,-3), ratio = 3)
         geom_cs1 = checksum.GeomChecksum(cell)
@@ -39,7 +41,7 @@ class CheckSumTest(unittest.testcase):
         self.assertEqual(len(arr), 1)
         self.assertEqual(len(arr[0]), 3)
         name, selfh, otherh = arr[0]
-        self.assertEqual(name, "main_shaft")
+        self.assertEqual(name, "TestCell.main_shaft")
 
 
 
