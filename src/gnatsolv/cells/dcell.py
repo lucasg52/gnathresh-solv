@@ -1,3 +1,4 @@
+from warnings import warn
 from neuron import h
 import numpy as np
 from .. import eq
@@ -80,7 +81,7 @@ class DCell(BaseTaperCell):
         Update the length of an individual side-branch such that side[n].L (in terms of
         lambda) is equal to l[n]. By default, the former will be set unless length is
         specified.
-        That is, the information the table l takes precedence
+        That is, the information the table l is a fallback if arg 'length' is not provided 
         """
         if length is None:
             length = self.l[n]
@@ -88,36 +89,39 @@ class DCell(BaseTaperCell):
             self.l[n] = length
         if length == 0:
             self.side[n].disconnect()
+            length = self.dx/2  # make branch short to ensure lower memory footprint
         else:
             if self.side[n].parentseg() is None:
                 self.side[n].connect(
                         self.parentdict[n]
                         (self.d[n])
                         )
-            elength = eq.elength(self.parent, d = self.main_diam/self.ratio)
-            self.side[n].L = length * elength
-            eq.normalize_dlambda(self.side[n], dx = self.dx)
+        elength = eq.elength(self.parent, d = self.main_diam/self.ratio)
+        self.side[n].L = length * elength
+        eq.normalize_dlambda(self.side[n], dx = self.dx)
 
     def update_dist(self, n, dist = None):
         """
         Update the attachment point of an individual side-branch such that side[n] is attached
         at distance d[n]. By default, the former will be set unless dist is specified.
-        That is, the information the table d takes precedence
+        That is, the information the table d is a fallback if arg 'dist' is not provided 
         """
         if dist is None:
             dist = self.d[n]
         if self.l[n] != 0:
             self.side[n].disconnect()
-            self.side[n].connect(
-                    self.parentdict
-                    [n]
-                    (dist)
-                    )
-            dist = self.side[n].parentseg().x
         else:
-            assert self.side[n].parentseg() is None
-
-            dist = self.side[n].parentseg().x
+            if self.side[n].parentseg() is not None:
+                warn(f"side[{n}] was attached despite having length zero", Warning)
+                self.side[n].disconnect()
+        self.side[n].connect(
+                self.parentdict
+                [n]
+                (dist)
+                )
+        dist = self.side[n].parentseg().x
+        if self.l[n] == 0:
+            self.side[n].disconnect()
         self.d[n] = dist
 
     def iter_length(self, branchid, dxratio = 1, start = 0, end = None):
@@ -129,7 +133,7 @@ class DCell(BaseTaperCell):
                 ):
             self.update_length(branchid, length)
             yield length
-    def iter_dist(self, branchid):
+    def iter_dist(self, branchid, nowarn = False):
         """
         iterates the attachment distance, i.e. d[branchid] of side[branchid] by attaching
         it to each segment that it can be attached to
@@ -143,7 +147,16 @@ class DCell(BaseTaperCell):
         zerolength = False
         if self.l[branchid] == 0:
             zerolength = True
-            print("DCell: Warning: iterating branch distance for branch of 0 length")
+            if not nowarn:
+                warn(
+                        "iterating branch distance for branch of 0 length."
+                        +" specify nowarn=True to ignore",
+                        Warning
+                        )
+            if self.side[branchid].nseg > 1:
+                warn(f"side[{branchid}] is long despite having l[{branchid}] equal to zero."
+                        + " preformance may suffer",
+                        Warning)
         for seg in (
                 list(
                     self.parentdict[branchid]
