@@ -2,7 +2,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-from . import readsummary as rs
+# from visual import readsummary as rs
 
 from matplotlib import cm
 #def makeplot(cmap = cm.viridis):
@@ -27,10 +27,10 @@ plt.style.use('_mpl-gallery')
 #plt.show()
 
 
-def matrixplot(matx):
+def matrixplot(matx, start1, stop1, start2, stop2):
     rows,cols = matx.shape
-    X = np.arange(cols)
-    Y = np.arange(rows)
+    X = np.linspace(start1,stop1,rows)#np.arange(cols)
+    Y = np.linspace(start2,stop2,cols)#np.arange(rows)
 
     X, Y = np.meshgrid(X, Y)
     Z = matx
@@ -39,13 +39,13 @@ def matrixplot(matx):
     ax.plot_surface(X, Y, Z, vmin=Z.min(),  cmap = cm.viridis)
     plt.show()
 
-def matrixplot_smart(matx, axisvars):
-    rows,cols = matx.shape
-    X = axisvars[1]
-    Y = axisvars[0]
+def matrixplot_smart(matx_x, matx_z): #axisvars):
+    rows,cols = matx_z.shape
+    X = matx_x*4 #axisvars[1]
+    Y = matx_x*4#axisvars[0]
 
     X, Y = np.meshgrid(X, Y)
-    Z = matx
+    Z = matx_z
 
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
     ax.plot_surface(X, Y, Z, vmin=Z.min(),  cmap = cm.viridis)
