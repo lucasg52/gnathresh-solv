@@ -9,6 +9,8 @@ class DelClimbTest(unittest.TestCase):
     def test_basicfit(self):
         def fun(x):
             return -0.1337*np.log(2.024-x)+4.2069
+        trueparams = np.array([4.2069, -0.1337, 2.024])
+        truegna = trueparams[2]
         startpts = [
                 [1, fun(1)],
                 [1.5, fun(1.5)],
@@ -16,5 +18,5 @@ class DelClimbTest(unittest.TestCase):
                 ]
         d = DelayClimb(fun, startpts)
         d.safety_factor = 1/5000
-        d.fit()
-        self.assertAlmostEqual(d.base, np.exp(1/-0.1337), places = 4)
+        
+        self.assertAlmostEqual(d._fit(fititers = 15), truegna, places = 4)

@@ -3,27 +3,13 @@ a DelayClimb search will try to stick to sampling one side of a logarithm curve 
 """
 import numpy as np
 from .searchclasses import ExpandingSearch
-#def rangetransform(arr):
-#    return (arr - arr[0]) / (arr[-1] - arr[0])
-#def rangetransform_inv(arr, x):
-#    return (arr[-1] - arr[0]) * x + arr[0]
+
 def unit_expo(base, x):
     x = float(x)
     base = float(base)
     return (
             (1 - pow(base, x))
             / (1 - base)
-            )
-
-def unit_expo_partialbase(base, x):
-    x = float(x)
-    base = float(base)
-    return (
-                (
-                    (1 - pow(base , x))
-                    - (1 - base) * x * pow(base, x-1)
-                )
-                / pow((1 - base), 2)
             )
 
 def fit_3pnt_expo(
@@ -53,6 +39,7 @@ def fit_unit_expo(
         maxiters,
         xtarg, ytarg,
         lo, hi,
+        radius = 0,
         **kwargs
         ):
     search = ExpandingSearch(
@@ -61,58 +48,45 @@ def fit_unit_expo(
             lim_lo = 0, lim_hi = 1-pow(2,-7),
             **kwargs
             )
-    def newton(base_est):
-        deriv = unit_expo_partialbase(base_est, xtarg)
-        if abs(deriv) < pow(2,-50):
-            return -1
-        return abs(
-                base_est
-                + (
-                    ytarg
-                    - unit_expo(base_est, xtarg)
-                    )
-                / deriv
-                )
-    newtguess = 0
     for i in range(maxiters):
         d = search.hi-search.lo
-        if search.lo + d/3 < newtguess < search.hi - d/3:
-            newtguess = newton(newtguess)
-            if newtguess < 0:
-                newtguess = -1
-        else:
-            if search.searchstep():
-                raise ValueError("search failed", {"search" : (search.lo, search.hi), "newtguess" : newtguess, "i" : i})
-            if newtguess != -1:
-                newtguess = newton(search.a)
-
-    if search.lo < newtguess < search.hi:
-        return newtguess
+        if d < radius:
+            return search.a
+        if search.searchstep():
+            raise ValueError("search failed")
     return search.a
 
-class DelayPnt:
-    def __init__(self, *args):
-        self.data = args
-    gna = property(lambda self : self.data[0])
-    delay = property(lambda self : self.data[1])
-    def __lt__(self, other):
-        return self.gna < other.gna
-    def __eq__(self, other):
-        return self.gna == other.gna
-    def __gt__(self, other):
-        return self.gna > other.gna
+class DelayPnt(tuple):
+    """
+    Represents a point (gna, delay) where delay is the AP death time (see gnatsolv.tools.apdeath)
+    """
+    gna = property(lambda self : self[0])
+    delay = property(lambda self : self[1])
+
 class DelayClimb:
     """
-    a DelayClimb search will try to stick to sampling one side of a logarithm curve to find its
+    A DelayClimb search will try to stick to sampling one side of a logarithm curve to find its
     roots.
-    the delay curve is modeled as g_bar(delay) = k*base^delay + thresh
+    The delay curve is modeled as g_bar(delay) = k*base^delay + thresh
+        propatest,  function that takes one parameter, gna, and returns prop, delay:
+            prop:   True if AP propogates, false otherwise
+            delay:  AP death delay
+        startpnts   array of three starting points (gna, delay) with sub-threshold gna
+    Properties:
+        base:           previous base of the fitted exponential
+        preverror:      difference between the previous guess (for the base of the exp.) and self.base
+        safety_factor:  factor by which the threshold is avoided, between 0 and 1.
+                        Making it smaller allows for faster convergence, but simulation runs may be wasted due to having above-threshold gna.
+                        Making it too large will slow down convergence.
+        fititers:       number of binary search iterations to fit the exponential
+        pnts:           array of 3 DelayPoints, in order of increasing gna
+        maxgna:         self.pnts[2].gna
     """
     def __init__(
                  self,
                  propatest,
                  startpnts
                 ):
-        print("WARNING! DelayClimb is NOT YET STABLE. Limit usage to small experiments only to avoid time loss")
         if len(startpnts) != 3:
             raise TypeError("startpnts should be a 3 x 2 array of numbers")
 
@@ -125,15 +99,18 @@ class DelayClimb:
         # k = (g_1 - g_0)/(base^del_1 - base^del_0)
         # thresh = g_0 - k * base^del_0
         # for some base in the interval (0,1)
-        self.fititers = 6
+        self.fititers = 10
         self.safety_factor = 1/10
 
-        self.pnts = [DelayPnt(*t) for t in startpnts]
+        self.pnts = [DelayPnt(t) for t in startpnts]
         self.pnts.sort()
 
     maxgna = property(lambda self : self.pnts[2].gna)
 
-    def fit(self, fititers = None):
+    def _fit(self, fititers = None):
+        # curve fitting precision increases despite a constant number of search iterations thanks to:
+        #   points being closer to the asymptote
+        #   guessing subsequent exponential base using error of previous guess
         if fititers is None:
             fititers = self.fititers
         gna = np.array([p.gna for p in self.pnts])
@@ -148,8 +125,15 @@ class DelayClimb:
         return thresh
 
     def get_nonprop_result(self, gna, depth = 0):
+        """
+        Tries to find a sub-threshold gna between gna and self.maxgna
+        Returns:
+            gna -- a sufficent gna
+            delay -- the time it took for the AP to die
+        Raises RecursionError upon failure
+        """
         if depth > 4:
-            raise RecursionError("strange... you should probably do a binary search. this is some bs")
+            raise RecursionError("failed to find nonpropogating gna value")
         prop, delay = self.propatest(gna)
         if prop:
             print("DelayClimb: Warning: wasted an iteration - safety_factor may be to small")
@@ -158,13 +142,23 @@ class DelayClimb:
 
 
     def searchstep(self, safety_factor = None, fititers = None):
+        """
+        calls propatest with a gna closer to the threshold by a factor of approximately
+        safety_factor, and logs the death time associated with that gna (pushing it to the front
+        of self.pnts)
+        Returns: None
+        Raises RuntimeError if unable to find a sub-threshold gna
+        """
         if safety_factor is None:
             safety_factor = self.safety_factor
-        thresh = self.fit(fititers)
+        thresh = self._fit(fititers)
         nextgna = thresh - safety_factor * (thresh - self.maxgna)
-        nextgna, delay = self.get_nonprop_result(nextgna)
+        try:
+            nextgna, delay = self.get_nonprop_result(nextgna)
+        except RecursionError as e:
+            raise RuntimeError(str(e) + f"\nsearched between {self.maxgna} and {nextgna}")
         self.pnts.append(
-                DelayPnt(nextgna, delay)
+                DelayPnt((nextgna, delay))
                 )
         del self.pnts[0]
 
