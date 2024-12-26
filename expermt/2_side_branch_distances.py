@@ -34,6 +34,7 @@ def collect_gna(e, est, err):
 def main():
 
     cell = DCell()  # set up cell
+    cell.dx=pow(2,-3)
     cell._normalize()
     cell.l[3] = 0  # sets lengths of unneeded branches to 0
     cell.l[1] = cell.l[2] =4.0
@@ -48,7 +49,7 @@ def main():
     # set up death recorder and gna solver
     deathrec = DeathRec(cell.main_shaft, cell.main_shaft, 1)
     e = DeathEnviro(cell, deathrec, stim)
-    e.PRINTTIME = True #traacks how long it take
+    e.PRINTTIME = True #tracks how long it take
 
     initial_estimate = 0.15
     initial_error = 0.05
