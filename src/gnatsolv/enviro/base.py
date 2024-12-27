@@ -1,7 +1,7 @@
 """
 Environments will be the standard method of setting up experiments that involve calculating gna thresh for a particular geometry or family of cell geometries.
 Instance attributes:
-    m:         m(y Cell) -- the cell for which gna thresh is computed
+    cell:      the cell for which gna thresh is computed
     stim:      The stimulus for the cell. Often an h.IClamp
 
 Instance methods:
@@ -12,8 +12,9 @@ Instance methods:
 from abc import ABC, abstractmethod
 
 class AbstractEnviro(ABC):
-    def __init__(self, m, aprec, stim, dt = pow(2,-6), **kwargs):
-        self.m = m
+    optdict = {}
+    def __init__(self, cell, aprec, stim, dt = pow(2,-6), **kwargs):
+        self.cell = cell
         self.aprec = aprec
         self.stim = stim
         self.dt = dt
@@ -31,7 +32,7 @@ class AbstractEnviro(ABC):
     #def _setup(self):
     #     
     def set_gbar(self, gbar):
-        for sec in self.m.soma.wholetree():
+        for sec in self.cell.soma.wholetree():
             try:
                 sec.gbar_nafTraub = gbar
                 sec.gbar_kdrTraub = gbar
@@ -42,5 +43,3 @@ class AbstractEnviro(ABC):
     def fullsolve(self):
         '''solve for gNa_Thresh given the current state of the environment (i.e. cell morphology, paramaters, etc.)'''
         pass
-
-

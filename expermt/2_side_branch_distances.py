@@ -6,8 +6,8 @@ from neuron import h
 import time
 h.load_file("stdrun.hoc")
 
-def collect_gna(e, est, err):
-    cell = e.m
+def collect_gna(e, est, rad):
+    cell = e.cell
     mtx = np.zeros((cell.main_shaft.nseg,cell.main_shaft.nseg))
     seg_mtx = []
     start = time.perf_counter()
@@ -18,10 +18,10 @@ def collect_gna(e, est, err):
         for y in cell.iter_dist(2):
             # print(f"NEW SPOT: seg = {y}")
             # binary search for g_Na,Thresh given current geometry, up to 9 digits of accuracy
-            gna = e.fullsolve(est, err, 1e-9)
+            gna = e.fullsolve(est, rad, 1e-9)
             gna_lst.append(gna)
             # guess subsequent error based on previous error
-            err = (abs(est - gna) + err) / 2
+            rad = (abs(est - gna) + rad) / 2
             # update the estimate to ensure faster convergence of subsequent binary search
             est = gna
             # print(f"gna for seg {x} = {gna}")

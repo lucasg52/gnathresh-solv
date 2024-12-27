@@ -6,8 +6,8 @@ from neuron import h
 h.load_file("stdrun.hoc")
 
 
-def collect_gna(e, est, err, end, start=0):
-    cell = e.m
+def collect_gna(e, est, rad, end, start=0):
+    cell = e.cell
     mtx_len = np.linspace(start, end,int((end-start)/(1*cell.dx)))
     mtx_diam = mtx_len.size
     gna_mtx = np.zeros((mtx_diam, mtx_diam))
@@ -17,11 +17,11 @@ def collect_gna(e, est, err, end, start=0):
         for n,len2 in enumerate(mtx_len):
             cell.update_length(2, len2)
         #     # h.topology()
-            gna = e.fullsolve(est, err, 1e-9)
+            gna = e.fullsolve(est, rad, 1e-9)
             gna_mtx[m, n] = gna
 
-            # guess subsequent error based on previous error
-            err = (abs(est - gna) + err) / 2
+            # guess subsequent radius based on previous radius
+            rad = (abs(est - gna) + rad) / 2
             # update the estimate to ensure faster convergence of subsequent binary search
             est = gna
     return gna_mtx
@@ -51,12 +51,12 @@ def main():
     e.PRINTTIME = True  # enable solver to print runtime of each individual solve
 
     initial_estimate = 0.15
-    initial_error = 0.05
+    initial_radius = 0.05
 
     print(cell.dx)
     # data = collect_gna(
     #     e,
-    #     initial_estimate, initial_error,
+    #     initial_estimate, initial_radius,
     #     end=6
     # )
     # print(data)
