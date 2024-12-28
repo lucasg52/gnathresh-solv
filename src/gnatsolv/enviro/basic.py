@@ -128,16 +128,12 @@ class BasicEnviro(AbstractEnviro):
         if i == maxsteps - 1:
             warn(
                     f"Threshold search halted after exceeding max number of steps ({maxsteps})",
-                    Warning,
-                    stacklevel = 2
-                    )
+                    Warning, stacklevel = 2)
         if abs(search.a - est) > self.SEARCH_RAD_WARN*rad:
             warn(
                     f"Solution found beyond {self.SEARCH_RAD_WARN}x search radius."
                     + " consider using a larger search radius or implement stronger estimation",
-                    Warning,
-                    stacklevel = 2
-                    )
+                    Warning, stacklevel = 2)
         return search.a
     
     def fullsolveiter(self, search, tstop, acc):
