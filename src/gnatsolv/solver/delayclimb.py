@@ -44,7 +44,7 @@ def fit_unit_expo(
         ):
     search = ExpandingSearch(
             lo, hi,
-            propatest = lambda base : ytarg > unit_expo(base, xtarg),
+            proptest = lambda base : ytarg > unit_expo(base, xtarg),
             lim_lo = 0, lim_hi = 1-pow(2,-7),
             **kwargs
             )
@@ -68,7 +68,7 @@ class DelayClimb:
     A DelayClimb search will try to stick to sampling one side of a logarithm curve to find its
     roots.
     The delay curve is modeled as g_bar(delay) = k*base^delay + thresh
-        propatest,  function that takes one parameter, gna, and returns prop, delay:
+        proptest,   function that takes one parameter, gna, and returns prop, delay:
             prop:   True if AP propogates, false otherwise
             delay:  AP death delay
         startpnts   array of three starting points (gna, delay) with sub-threshold gna
@@ -84,13 +84,13 @@ class DelayClimb:
     """
     def __init__(
                  self,
-                 propatest,
+                 proptest,
                  startpnts
                 ):
         if len(startpnts) != 3:
             raise TypeError("startpnts should be a 3 x 2 array of numbers")
 
-        self.propatest = propatest
+        self.proptest = proptest
 
         self.base = 0.5
         self.preverror = 0.25
@@ -134,7 +134,7 @@ class DelayClimb:
         """
         if depth > 4:
             raise RecursionError("failed to find nonpropogating gna value")
-        prop, delay = self.propatest(gna)
+        prop, delay = self.proptest(gna)
         if prop:
             print("DelayClimb: Warning: wasted an iteration - safety_factor may be to small")
             return self.get_nonprop_result((gna + self.maxgna)/2, depth + 1)
@@ -143,7 +143,7 @@ class DelayClimb:
 
     def searchstep(self, safety_factor = None, fititers = None):
         """
-        calls propatest with a gna closer to the threshold by a factor of approximately
+        calls proptest with a gna closer to the threshold by a factor of approximately
         safety_factor, and logs the death time associated with that gna (pushing it to the front
         of self.pnts)
         Returns: None

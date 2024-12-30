@@ -1,51 +1,37 @@
 # Lucas Swanson -- Ripon College '27
 
-# This file (for now) simply lays out what I believe the solver could look like.
-
 import math
 
-class BinSearch(): # should change name to BinSearch ?
+class BinSearch():
     """
     Sets up a binary search
         lo, hi,           the assumed window (lower and upper bounds) in which the solution lies
-        propatest,        the function that will return True if propagation succeeds, False otherwise
+        proptest,         the function that will return True if propagation succeeds, False otherwise
         a = math.nan,     optionally, a first guess can be provided (otherwise is the median between lo and hi)
-        stopcond = None   for use of fullsearch() . if left as None, will throw warning, and not iterate
-
     """
     def __init__(
                  self,
                  lo, hi,
-                 propatest,
+                 proptest,
                  a = math.nan,
                 ):
         self.lo = lo
         self.hi = hi
         self.term = False
-        self.propatest = propatest
+        self.proptest = proptest
         if math.isnan(a):
             self.a = (lo + hi) / 2
 
     def searchstep (self): 
         """ Iterate the search
-        pass approximation (a) to propatest, if true is returned, assume approximation too high, if false, vise-versa.
+        pass approximation (self.a) to proptest, if true is returned, assume approximation too high, if false, vise-versa.
         Returns: None
         """
-        if self.propatest(self.a):
+        if self.proptest(self.a):
             self.hi = self.a
         else:
             self.lo = self.a
         self.a = (self.lo + self.hi) / 2
-
-#    def fullsearch (self):
-#        if self.stopcond is None:
-#            sys.stderr.write("GNASearch: called fullsearch() without stop condition")
-#        else:
-#            while self.stopcond(self): #and self.term is True:
-#                self.searchstep()
-#        
-#        return self.a
-
 
 class ExpandingSearch(BinSearch):
     # This class will be useful when bounds for the solution may be provided that are not consistent (there may be a chance that the provided bounds do not contain the solution)
@@ -53,23 +39,21 @@ class ExpandingSearch(BinSearch):
     """
     Identifies more feisable bounds before initiating a binary search
         lo, hi,           the assumed window (lower and upper bounds) in which the solution lies
-        propatest,        the function that will return True if propagation succeeds, False otherwise
+        proptest,          the function that will return True if propagation succeeds, False otherwise
         lim_lo, lim_hi,   since the search may expand, these will provide hard upper and lower bounds
         a = math.nan,     optionally, a first guess can be provided (otherwise is the median between lo and hi)
-        stopcond = None   for use of fullsearch() . if left as None, will throw warning, and not iterate
-
     """
     def __init__(
                  self,
                  lo, hi,
-                 propatest,
+                 proptest,
                  lim_lo, lim_hi,
                  a = math.nan
                 ):
         self.lim_lo = lim_lo
         self.lim_hi = lim_hi
         self.expandstep = self._expandstep_initial
-        super().__init__(max(lim_lo, lo), min(lim_hi, hi), propatest, a = a)
+        super().__init__(max(lim_lo, lo), min(lim_hi, hi), proptest, a = a)
     def searchstep(self):
         """ Iterate the search
         Checks if alledged solution lies between hi and lo before proceeding as a binary search (see help(BinSearch))
@@ -93,7 +77,7 @@ class ExpandingSearch(BinSearch):
             return False
         return True
     def _expandstep_hi(self):
-        if not self.propatest(self.hi):
+        if not self.proptest(self.hi):
             d = self.hi - self.lo
             self.hi += 2 * d
             self.lo += d
@@ -101,7 +85,7 @@ class ExpandingSearch(BinSearch):
             return False
         return True
     def _expandstep_lo(self):
-        if self.propatest(self.lo):
+        if self.proptest(self.lo):
             d = self.hi - self.lo
             self.lo -= 2 * d
             self.hi -= d

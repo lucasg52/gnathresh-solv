@@ -8,8 +8,8 @@ import time
 h.load_file("stdrun.hoc")
 
 
-def collect_gna(e, est, err): #collects gna for each geometry by changing the distance of the side branch and the the subbranch
-    cell = e.m
+def collect_gna(e, est, rad): #collects gna for each geometry by changing the distance of the side branch and the the subbranch
+    cell = e.cell
     cell.dx = pow(2,-4)
     cell._normalize()
     gna_mtx = np.zeros((cell.main_shaft.nseg,cell.parent.nseg))
@@ -22,11 +22,11 @@ def collect_gna(e, est, err): #collects gna for each geometry by changing the di
             # seg_mtx[0,l] = seg.x
             # h.topology()
             # print(f"NEW SPOT: seg = {y}")
-            gna = e.fullsolve(est, err, 1e-9)
+            gna = e.fullsolve(est, rad, 1e-9)
             gna_lst.append(gna)
 
-            # guess subsequent error based on previous error
-            err = (abs(est - gna) + err) / 2
+            # guess subsequent radius based on previous radius
+            rad = (abs(est - gna) + rad) / 2
             # update the estimate to ensure faster convergence of subsequent binary search
             est = gna
 
@@ -55,11 +55,11 @@ def main():
     e.PRINTTIME = True #enable solver to print runtime of each individual solve
 
     initial_estimate = 0.15
-    initial_error = 0.05
+    initial_radius = 0.05
 
     gna_data = collect_gna(
         e,
-        initial_estimate, initial_error
+        initial_estimate, initial_radius
     )
     np.save('side_and_sub_branches_distances_gna_matrix1',gna_data)
     # np.save('side_and_sub_branches_distances_seg_matrix_for_parent1', seg_data)

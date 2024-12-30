@@ -1,6 +1,6 @@
 from neuron import h
 class APRecorder():
-    """Record ap spikes at sec(ran)"""
+    """Consists of a h.NetCon (self.nc) recording ap spikes at sec(ran)"""
     def __init__ (
             self,
             sec,
