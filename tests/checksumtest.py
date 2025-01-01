@@ -43,16 +43,3 @@ class CheckSumTest(unittest.TestCase):
         name, selfh, otherh = arr[0]
         self.assertEqual(name, "TestCell.main_shaft")
 
-
-
-#
-#mysec = h.Section()
-#mysec.nseg = 9
-#
-#mysec2 = h.Section()
-#mysec2.nseg = 9
-#
-#mysec3 = h.Section()
-#mysec3.nseg = 9
-#
-#mysec2.connect(myshi(0.5))

@@ -11,11 +11,11 @@ class SolveTest(unittest.TestCase):
     def test_solve1(self):
         m = DCell()
         e = DeathEnviro(
-                m = m, 
+                cell = m, 
                 stim = h.IClamp(m.parent(1)),
                 deathrec = DeathRec(
                     m.main_shaft, m.main_shaft,
-                    tstop = 1
+                    tstart = 1
                     )
                 )
         e.stim.delay = 0.5
@@ -27,11 +27,11 @@ class SolveTest(unittest.TestCase):
     def test_expandsolve_down(self):
         m = DCell()
         e = DeathEnviro(
-                m = m, 
+                cell = m, 
                 stim = h.IClamp(m.parent(1)),
                 deathrec = DeathRec(
                     m.main_shaft, m.main_shaft,
-                    tstop = 1
+                    tstart = 1
                     )
                 )
         e.stim.delay = 0.5
@@ -43,11 +43,11 @@ class SolveTest(unittest.TestCase):
     def test_expandsolve_up(self):
         m = DCell()
         e = DeathEnviro(
-                m = m, 
+                cell = m, 
                 stim = h.IClamp(m.parent(1)),
                 deathrec = DeathRec(
                     m.main_shaft, m.main_shaft,
-                    tstop = 1
+                    tstart = 1
                     )
                 )
         e.stim.delay = 0.5

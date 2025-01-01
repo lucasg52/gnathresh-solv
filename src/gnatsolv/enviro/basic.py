@@ -120,6 +120,11 @@ class BasicEnviro(AbstractEnviro):
         search = ExpandingSearch(
                 est - rad, est + rad, self.proptest, 
                 lim_lo = self.MINGBAR, lim_hi = self.MAXGBAR)
+        search._fix_state()
+        if search.lo >= search.hi:
+            warn("initial search range was outside of feasable gna range",
+                    Warning, stacklevel = 2)
+            return search.lo if search.lo == self.MINGBAR else self.MAXGBAR
         for i in range(maxsteps):
             if self.fullsolveiter(search, tstop, acc):
                 break
