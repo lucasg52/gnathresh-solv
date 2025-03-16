@@ -71,6 +71,7 @@ PROCEDURE doroundoff(){
 			int exph = ilogb(h); // as described in c99
 					    // en.cppreference.com/w/c/numeric/math/ilogb
 			double addh = scalbn((double)1.0, exph + ROUNDOFF);
+			// truncate m and h via cancellation
 			m += addm;
 			m -= addm;
 			h += addh;

@@ -72,6 +72,7 @@ PROCEDURE doroundoff(){
 			int expm = ilogb(m); // as described in c99
 					    // en.cppreference.com/w/c/numeric/math/ilogb
 			double add = scalbn((double)1.0, expm + ROUNDOFF);
+			// truncate mm via cancellation
 			m += add;
 			m -= add;
 		}
