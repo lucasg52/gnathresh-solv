@@ -1,4 +1,5 @@
 import random
+import sys
 from neuron import h
 import numpy as np
 from gnatsolv.cells.dcell import DCell
@@ -9,6 +10,7 @@ from gnatsolv.tools.environment import DeathEnviro
 h.load_file('stdrun.hoc')
 
 def calcthreshes(seed, leng=10):
+    global cell, stim, e, deathrec
     cell = DCell()
     cell.dx =pow(2,-7)
     cell._normalize()
@@ -48,13 +50,14 @@ def normalizerange(est, rad, acc):
     return est_n, pow(2, i)*acc, acc
 
 
-def accsweep(e, rmax = 10, est_init = 0.15, rad_init = 0.05, acc = pow(2,-14)):
+def accsweep(e, rmax = 40, est_init = 0.15, rad_init = 0.05, acc = pow(2,-14)):
     est = est_init
     rad = rad_init
     ret = []
 
-    for i in range(0, rmax +1):
-        #print('|',end = '')
+    for i in range(0, rmax +1, 4):
+        print('|',end = '')
+        sys.stdout.flush()
         h.roundoff_nafTraub = i
         h.roundoff_kdrTraub = i
         assert(
@@ -67,7 +70,6 @@ def accsweep(e, rmax = 10, est_init = 0.15, rad_init = 0.05, acc = pow(2,-14)):
         err = abs(est-gnat)
         est = gnat
         rad = (err+acc)*1.5
-        print(f'{rad=}')
         ret.append(gnat)
 
     return ret
